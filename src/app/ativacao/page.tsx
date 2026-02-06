@@ -375,7 +375,7 @@ export default function AtivacaoPage() {
                         {t("naoEfetuouPagamento")}
                       </p>
                       <Link
-                        href="https://wa.me/+5553981185633"
+                        href="https://wa.me/+5553981118789"
                         target="_blank"
                         rel="noopener noreferrer"
                         className={`flex items-center justify-center gap-2 px-4 py-2 rounded-xl border transition-all duration-300 cursor-pointer hover:scale-105 ${bgInput} ${textPrimary} text-xs md:text-sm`}

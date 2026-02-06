@@ -621,7 +621,7 @@ export default function Home() {
                 </ul>
 
                 <a
-                  href="https://wa.me/+5553981185633"
+                  href="https://wa.me/+5553981118789"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 text-center block"
@@ -702,7 +702,7 @@ export default function Home() {
           </p>
 
           <a
-            href="https://wa.me/+5553981185633"
+            href="https://wa.me/+5553981118789"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-3 bg-green-600 hover:bg-green-700 text-white font-bold text-lg px-8 py-4 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/25"
@@ -754,7 +754,7 @@ export default function Home() {
             <div>
               <h4 className="text-white font-bold mb-4">{t("rodape.suporte")}</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="https://wa.me/5553981185633" className="hover:text-blue-400 transition-colors">{t("rodape.contato")}</a></li>
+                <li><a href="https://wa.me/5553981118789" className="hover:text-blue-400 transition-colors">{t("rodape.contato")}</a></li>
                 <li><Link href="/ajuda" className="hover:text-blue-400 transition-colors">{t("rodape.central_ajuda")}</Link></li>
                 <li><Link href="/documentacao" className="hover:text-blue-400 transition-colors">{t("rodape.documentacao")}</Link></li>
               </ul>

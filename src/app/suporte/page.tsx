@@ -454,7 +454,7 @@ export default function Suporte() {
                   </div>
                   <h3 className={`text-lg font-bold ${textPrimary}`}>{t("telefone")}</h3>
                 </div>
-                <p className={`text-sm ${textSecondary}`}>(53) 98118-5633</p>
+                <p className={`text-sm ${textSecondary}`}>(53) 98111-8789</p>
                 <p className={`text-xs ${textMuted} mt-2`}>{t("atendimento_direto")}</p>
               </div>
             </div>
