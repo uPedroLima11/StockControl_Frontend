@@ -101,7 +101,7 @@ export default function Home() {
     setMostrarIdiomas(false);
   };
 
- 
+
 
   useEffect(() => {
     const estilo = document.createElement("style");
@@ -344,7 +344,7 @@ export default function Home() {
                     muted
                     loop
                     autoPlay
-                    playsInline 
+                    playsInline
                     preload="metadata"
                   >
                     <source src="/dashboard_preview.mp4" type="video/mp4" />

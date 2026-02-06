@@ -106,20 +106,20 @@ export default function Usuarios() {
   });
 
   useEffect(() => {
-  const temaSalvo = localStorage.getItem("modoDark");
-  const ativado = temaSalvo === "true";
-  setModoDark(ativado);
+    const temaSalvo = localStorage.getItem("modoDark");
+    const ativado = temaSalvo === "true";
+    setModoDark(ativado);
 
-  const handleThemeChange = (e: CustomEvent) => {
-    setModoDark(e.detail.modoDark);
-  };
+    const handleThemeChange = (e: CustomEvent) => {
+      setModoDark(e.detail.modoDark);
+    };
 
-  window.addEventListener('themeChanged', handleThemeChange as EventListener);
-  
-  return () => {
-    window.removeEventListener('themeChanged', handleThemeChange as EventListener);
-  };
-}, []);
+    window.addEventListener('themeChanged', handleThemeChange as EventListener);
+
+    return () => {
+      window.removeEventListener('themeChanged', handleThemeChange as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     const token = Cookies.get("token");
