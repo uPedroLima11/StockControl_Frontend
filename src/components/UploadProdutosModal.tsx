@@ -37,6 +37,16 @@ interface EstatisticasUpload {
     erros: string[];
 }
 
+interface PreviewData {
+    linha: number;
+    conteudo: string;
+    isCabecalho: boolean;
+}
+
+interface ProdutoUpload {
+    nome: string;
+}
+
 export default function UploadProdutosModal({
     isOpen,
     onClose,
@@ -50,7 +60,7 @@ export default function UploadProdutosModal({
 
     const [arquivo, setArquivo] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
-    const [previewData, setPreviewData] = useState<any[]>([]);
+    const [previewData, setPreviewData] = useState<PreviewData[]>([]);
     const [estatisticas, setEstatisticas] = useState<EstatisticasUpload | null>(null);
     const [etapa, setEtapa] = useState<'selecao' | 'preview' | 'resultado'>('selecao');
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -275,7 +285,7 @@ export default function UploadProdutosModal({
                 <div class="mt-3">
                   <p class="font-bold">Produtos criados:</p>
                   <div class="max-h-40 overflow-y-auto text-sm">
-                    ${resultado.produtosCriados.slice(0, 10).map((prod: any) => `
+                    ${resultado.produtosCriados.slice(0, 10).map((prod: ProdutoUpload) => `
                       <div class="flex items-center gap-2 p-1">
                         <span class="text-green-500">✓</span>
                         <span>${prod.nome}</span>
@@ -301,7 +311,18 @@ export default function UploadProdutosModal({
 
                 onSuccess();
             } else {
-                let mensagemErro = resultado.mensagem || t('upload.erro');
+                const mensagemErro = resultado.mensagem || t('upload.erro');
+                const todasMensagensErro = resultado.estatisticas?.erros?.length > 0
+                    ? resultado.estatisticas.erros.slice(0, 10).map((erro: string) => `
+                      <div class="text-red-400 text-sm mb-1 flex items-start gap-2">
+                        <span class="text-red-500 mt-1">•</span>
+                        <span>${erro}</span>
+                      </div>
+                    `).join('')
+                    : '';
+                const temMaisErros = resultado.estatisticas?.erros?.length > 10;
+                const temErrosValidacao = resultado.estatisticas?.erros?.length > 0;
+                const ehFormatoInvalido = resultado.tipo === 'PlanilhaFormatoInvalidoException';
 
                 Swal.fire({
                     icon: 'error',
@@ -309,17 +330,12 @@ export default function UploadProdutosModal({
                     html: `
             <div class="text-left">
               <p class="mb-3">${mensagemErro}</p>
-              ${resultado.estatisticas?.erros?.length > 0 ? `
+              ${temErrosValidacao ? `
                 <div class="mt-2">
                   <p class="font-bold mb-2">${t('upload.errosEncontrados')}:</p>
                   <div class="max-h-40 overflow-y-auto bg-red-900/20 p-3 rounded">
-                    ${resultado.estatisticas.erros.slice(0, 10).map((erro: string) => `
-                      <div class="text-red-400 text-sm mb-1 flex items-start gap-2">
-                        <span class="text-red-500 mt-1">•</span>
-                        <span>${erro}</span>
-                      </div>
-                    `).join('')}
-                    ${resultado.estatisticas.erros.length > 10 ? `
+                    ${todasMensagensErro}
+                    ${temMaisErros ? `
                       <p class="text-gray-400 text-sm mt-2">
                         ... e mais ${resultado.estatisticas.erros.length - 10} erros
                       </p>
@@ -327,7 +343,7 @@ export default function UploadProdutosModal({
                   </div>
                 </div>
               ` : ''}
-              ${resultado.tipo === 'PlanilhaFormatoInvalidoException' ? `
+              ${ehFormatoInvalido ? `
                 <div class="mt-4 p-3 bg-yellow-900/20 rounded">
                   <p class="font-bold text-yellow-400">Dica:</p>
                   <p class="text-sm">Use o conversor para formatar sua planilha corretamente.</p>

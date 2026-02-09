@@ -1,5 +1,5 @@
 export class ParseUtils {
-  static parseCurrency(value: any): number {
+  static parseCurrency(value: unknown): number {
     if (value === null || value === undefined) return 0;
     
     if (typeof value === 'number') {
@@ -48,7 +48,7 @@ export class ParseUtils {
   }
   
 
-  static parseInteger(value: any): number {
+  static parseInteger(value: unknown): number {
     if (value === null || value === undefined) return 0;
     
     if (typeof value === 'number') {

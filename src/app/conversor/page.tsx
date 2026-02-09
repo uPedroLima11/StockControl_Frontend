@@ -23,15 +23,60 @@ import {
 import { ConversorPlanilha, COLUNAS_TEMPLATE } from '@/../lib/conversorPlanilha';
 import Swal from 'sweetalert2';
 
+// Definindo tipos para os dados
+interface DadosProduto {
+  Nome?: string;
+  Descricao?: string;
+  Preco?: number;
+  Quantidade?: number;
+  [key: string]: unknown;
+}
+
+interface DadosConvertidos extends DadosProduto {
+  _temErros?: boolean;
+  _erros?: string[];
+}
+
+interface EstatisticasConversao {
+  convertidos: number;
+  comErros: number;
+  [key: string]: unknown;
+}
+
+interface TemaConfig {
+  bg: string;
+  card: string;
+  texto: string;
+  textSecondary: string;
+  border: string;
+  borderLight: string;
+  hover: string;
+  input: string;
+  buttonPrimary: string;
+  buttonSecondary: string;
+  success: string;
+  error: string;
+  warning: string;
+  info: string;
+  cardGreen: string;
+  cardYellow: string;
+  cardBlue: string;
+  cardPurple: string;
+  bgInput: string;
+  bgCard: string;
+  textInput: string;
+  borderInput: string;
+}
+
 export default function ConversorPage() {
   const router = useRouter();
   const { t } = useTranslation('conversor');
   const [etapa, setEtapa] = useState<'upload' | 'mapeamento' | 'preview' | 'concluido'>('upload');
   const [colunasOriginais, setColunasOriginais] = useState<string[]>([]);
-  const [dadosOriginais, setDadosOriginais] = useState<Record<string, any>[]>([]);
+  const [dadosOriginais, setDadosOriginais] = useState<Record<string, unknown>[]>([]);
   const [mapeamento, setMapeamento] = useState<Record<string, string | null>>({});
-  const [dadosConvertidos, setDadosConvertidos] = useState<Record<string, any>[]>([]);
-  const [estatisticas, setEstatisticas] = useState<any>(null);
+  const [dadosConvertidos, setDadosConvertidos] = useState<DadosConvertidos[]>([]);
+  const [estatisticas, setEstatisticas] = useState<EstatisticasConversao | null>(null);
   const [arquivoNome, setArquivoNome] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [, setMostrarInfo] = useState<string | null>(null);
@@ -58,7 +103,7 @@ export default function ConversorPage() {
     };
   }, []);
 
-  const tema = useMemo(() => {
+  const tema: TemaConfig = useMemo(() => {
     if (modoDark) {
       return {
         bg: '#0F172A',
@@ -171,15 +216,16 @@ export default function ConversorPage() {
       const { dadosConvertidos: previewData, estatisticas: previewStats } =
         ConversorPlanilha.converterDados(resultado.dadosOriginais.slice(0, 10), mapeamentoSugerido);
 
-      setDadosConvertidos(previewData);
-      setEstatisticas(previewStats);
+      setDadosConvertidos(previewData as DadosConvertidos[]);
+      setEstatisticas(previewStats as unknown as EstatisticasConversao);
       setEtapa('mapeamento');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : t('erros.erro_desconhecido');
       Swal.fire({
         icon: 'error',
         title: t('erros.erro_processar_arquivo'),
-        text: error.message || t('erros.erro_desconhecido'),
+        text: errorMessage,
         background: modoDark ? '#132F4C' : '#FFFFFF',
         color: modoDark ? '#FFFFFF' : '#0F172A',
       });
@@ -195,8 +241,8 @@ export default function ConversorPage() {
     const { dadosConvertidos: novosDados, estatisticas: novasEstatisticas } =
       ConversorPlanilha.converterDados(dadosOriginais.slice(0, 10), novoMapeamento);
 
-    setDadosConvertidos(novosDados);
-    setEstatisticas(novasEstatisticas);
+    setDadosConvertidos(novosDados as DadosConvertidos[]);
+    setEstatisticas(novasEstatisticas as unknown as EstatisticasConversao);
   };
 
   const handleAutoComplete = () => {
@@ -206,16 +252,16 @@ export default function ConversorPage() {
     const { dadosConvertidos: novosDados, estatisticas: novasEstatisticas } =
       ConversorPlanilha.converterDados(dadosOriginais.slice(0, 10), novoMapeamento);
 
-    setDadosConvertidos(novosDados);
-    setEstatisticas(novasEstatisticas);
+    setDadosConvertidos(novosDados as DadosConvertidos[]);
+    setEstatisticas(novasEstatisticas as unknown as EstatisticasConversao);
   };
 
   const handleConverterTudo = () => {
     const { dadosConvertidos: todosDados, estatisticas: todasEstatisticas } =
       ConversorPlanilha.converterDados(dadosOriginais, mapeamento);
 
-    setDadosConvertidos(todosDados);
-    setEstatisticas(todasEstatisticas);
+    setDadosConvertidos(todosDados as DadosConvertidos[]);
+    setEstatisticas(todasEstatisticas as unknown as EstatisticasConversao);
     setEtapa('preview');
     setPaginaAtual(1);
   };
@@ -866,7 +912,7 @@ export default function ConversorPage() {
                       borderColor: modoDark ? 'rgba(245, 158, 11, 0.3)' : '#FDE68A'
                     }}>
                     <span className={modoDark ? 'text-amber-300' : 'text-amber-800'}>{estatisticas.comErros} ⚠️</span>
-                  </div>
+                </div>
                 )}
               </div>
             )}
@@ -906,7 +952,7 @@ export default function ConversorPage() {
                         </td>
                         <td className="p-1.5">
                           <div className="text-xs font-medium">
-                            {linha.Preco > 0 ? (
+                            {linha.Preco && linha.Preco > 0 ? (
                               <span className="text-emerald-500">
                                 R$ {linha.Preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                               </span>
@@ -948,7 +994,7 @@ export default function ConversorPage() {
   };
 
   const renderEtapaPreview = () => {
-    const ProdutoCard = ({ produto, index }: { produto: Record<string, any>, index: number }) => {
+    const ProdutoCard = ({ produto, index }: { produto: DadosConvertidos, index: number }) => {
       const globalIndex = indexPrimeiroProduto + index;
       const isExpandido = produtosExpandidos.includes(globalIndex);
 
@@ -982,7 +1028,7 @@ export default function ConversorPage() {
                   {produto.Nome || t('preview.sem_nome')}
                 </h3>
                 <div className="flex items-center gap-1.5 mt-0.5">
-                  {produto.Preco > 0 ? (
+                  {produto.Preco && produto.Preco > 0 ? (
                     <span className="px-1.5 py-0.5 rounded text-xs border"
                       style={{
                         backgroundColor: modoDark ? 'rgba(16, 185, 129, 0.2)' : 'rgb(209, 250, 229)',
@@ -1045,8 +1091,8 @@ export default function ConversorPage() {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="text-[10px] opacity-60 mb-0.5" style={{ color: tema.textSecondary }}>{t('mapeamento.colunas.preco')}</div>
-                    <div className={`text-sm font-medium ${produto.Preco > 0 ? 'text-emerald-500' : ''}`} style={{ color: produto.Preco > 0 ? '#10B981' : tema.texto }}>
-                      {produto.Preco > 0 ? `R$ ${produto.Preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ 0,00'}
+                    <div className={`text-sm font-medium ${produto.Preco && produto.Preco > 0 ? 'text-emerald-500' : ''}`} style={{ color: produto.Preco && produto.Preco > 0 ? '#10B981' : tema.texto }}>
+                      {produto.Preco && produto.Preco > 0 ? `R$ ${produto.Preco.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}` : 'R$ 0,00'}
                     </div>
                   </div>
                   <div>
@@ -1109,7 +1155,7 @@ export default function ConversorPage() {
                     }}>
                     <span style={{ color: modoDark ? '#34D399' : '#059669' }}>{dadosConvertidos.length} {t('preview.produtos')}</span>
                   </span>
-                  {estatisticas?.comErros > 0 && (
+                  {estatisticas?.comErros && estatisticas.comErros > 0 && (
                     <span className={`px-1.5 py-0.5 rounded-full text-xs border`}
                       style={{
                         backgroundColor: modoDark ? 'rgba(245, 158, 11, 0.2)' : 'rgb(254, 252, 232)',
@@ -1162,7 +1208,7 @@ export default function ConversorPage() {
           </div>
           <div className={`rounded-lg p-2 text-center border ${tema.border}`} style={{ backgroundColor: tema.bgCard }}>
             <div className="text-base sm:text-xl font-bold text-amber-500">
-              {dadosConvertidos.filter(p => p.Preco > 0).length}
+              {dadosConvertidos.filter(p => p.Preco && p.Preco > 0).length}
             </div>
             <div className="text-[10px] sm:text-xs opacity-75 mt-0.5" style={{ color: tema.textSecondary }}>{t('preview.com_preco')}</div>
           </div>

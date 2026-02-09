@@ -16,12 +16,42 @@ export const COLUNAS_TEMPLATE: ColunaTemplate[] = [
   { id: 'Quantidade', obrigatorio: false, descricao: 'Quantidade em estoque', tipo: 'integer' },
 ];
 
+// Definindo interfaces para os dados
+export interface DadosOriginais {
+  [key: string]: unknown;
+}
+
+export interface DadosConvertidos {
+  Nome?: string;
+  Descricao?: string;
+  Preco?: number;
+  Quantidade?: number;
+  Quantidade_Minima?: number;
+  _erros?: string[];
+  _temErros?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ResultadoProcessamento {
+  colunasOriginais: string[];
+  dadosOriginais: DadosOriginais[];
+  erro?: string;
+}
+
+export interface EstatisticasConversao {
+  total: number;
+  convertidos: number;
+  comErros: number;
+  erros: string[];
+}
+
+export interface ResultadoConversao {
+  dadosConvertidos: DadosConvertidos[];
+  estatisticas: EstatisticasConversao;
+}
+
 export class ConversorPlanilha {
-  static async processarArquivo(file: File): Promise<{
-    colunasOriginais: string[];
-    dadosOriginais: Record<string, any>[];
-    erro?: string;
-  }> {
+  static async processarArquivo(file: File): Promise<ResultadoProcessamento> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       const extensao = file.name.split('.').pop()?.toLowerCase() || '';
@@ -36,7 +66,7 @@ export class ConversorPlanilha {
             reject(new Error('Formato não suportado. Use .csv, .xlsx ou .xls'));
           }
         } catch (error) {
-          reject(error);
+          reject(error instanceof Error ? error : new Error('Erro desconhecido ao processar arquivo'));
         }
       };
 
@@ -52,19 +82,19 @@ export class ConversorPlanilha {
 
   private static processarCSV(
     conteudo: string,
-    resolve: (value: { colunasOriginais: string[]; dadosOriginais: Record<string, any>[]; erro?: string }) => void,
-    reject: (reason?: any) => void
+    resolve: (value: ResultadoProcessamento) => void,
+    reject: (reason?: unknown) => void
   ) {
     Papa.parse(conteudo, {
       header: true,
       skipEmptyLines: true,
-      complete: (result: ParseResult<any>) => {
+      complete: (result: ParseResult<unknown>) => {
         if (result.errors.length > 0) {
           reject(new Error('Erro ao processar CSV'));
           return;
         }
 
-        const dados = result.data;
+        const dados = result.data as DadosOriginais[];
         if (dados.length === 0) {
           reject(new Error('Arquivo CSV vazio'));
           return;
@@ -73,14 +103,14 @@ export class ConversorPlanilha {
         const colunas = Object.keys(dados[0]);
         resolve({ colunasOriginais: colunas, dadosOriginais: dados });
       },
-      error: (error: any) => reject(error),
+      error: (error: Error) => reject(error),
     });
   }
 
   private static processarExcel(
     buffer: ArrayBuffer,
-    resolve: Function,
-    reject: Function
+    resolve: (value: ResultadoProcessamento) => void,
+    reject: (reason?: unknown) => void
   ) {
     try {
       const workbook = XLSX.read(buffer, { type: 'array', cellText: false, cellDates: true });
@@ -91,7 +121,7 @@ export class ConversorPlanilha {
         raw: false,
         defval: '',
         dateNF: 'dd/mm/yyyy'
-      }) as Record<string, any>[];
+      }) as DadosOriginais[];
 
       if (dados.length === 0) {
         reject(new Error('Planilha Excel vazia'));
@@ -168,35 +198,27 @@ export class ConversorPlanilha {
   }
 
   static converterDados(
-    dadosOriginais: Record<string, any>[],
+    dadosOriginais: DadosOriginais[],
     mapeamento: Record<string, string | null>
-  ): {
-    dadosConvertidos: Record<string, any>[];
-    estatisticas: {
-      total: number;
-      convertidos: number;
-      comErros: number;
-      erros: string[];
-    };
-  } {
-    const dadosConvertidos: Record<string, any>[] = [];
+  ): ResultadoConversao {
+    const dadosConvertidos: DadosConvertidos[] = [];
     const errosGerais: string[] = [];
     let comErros = 0;
 
     dadosOriginais.forEach((linhaOriginal, index) => {
-      const linhaConvertida: Record<string, any> = {};
+      const linhaConvertida: DadosConvertidos = {};
       const errosLinha: string[] = [];
       const numeroLinha = index + 2;
 
       COLUNAS_TEMPLATE.forEach((colunaTemplate) => {
         const colunaMapeada = mapeamento[colunaTemplate.id];
-        let valor: any = '';
+        let valor: unknown = '';
 
         if (colunaMapeada && linhaOriginal[colunaMapeada] !== undefined) {
           valor = linhaOriginal[colunaMapeada];
         }
 
-        let valorProcessado: any;
+        let valorProcessado: unknown;
         
         switch (colunaTemplate.id) {
           case 'Nome':
@@ -209,7 +231,7 @@ export class ConversorPlanilha {
           case 'Descricao':
             valorProcessado = String(valor || '').trim().substring(0, colunaTemplate.maxCaracteres || 255);
             if (!valorProcessado && colunaTemplate.obrigatorio) {
-              const nome = linhaConvertida['Nome'] || '';
+              const nome = linhaConvertida['Nome'] as string || '';
               valorProcessado = nome ? `Produto: ${nome}` : 'Produto sem descrição';
             }
             break;
@@ -237,7 +259,7 @@ export class ConversorPlanilha {
                 }
               }
               
-              valorProcessado = parseFloat(valorProcessado.toFixed(2));
+              valorProcessado = parseFloat(Number(valorProcessado).toFixed(2));
             }
             break;
 
@@ -246,7 +268,7 @@ export class ConversorPlanilha {
               valorProcessado = 0;
             } else {
               valorProcessado = this.parseInteger(valor);
-              if (isNaN(valorProcessado)) {
+              if (isNaN(valorProcessado as number)) {
                 errosLinha.push(`Linha ${numeroLinha}: Quantidade inválida "${valor}"`);
                 valorProcessado = 0;
               }
@@ -280,7 +302,7 @@ export class ConversorPlanilha {
     };
   }
 
-  static gerarCSV(dados: Record<string, any>[]): string {
+  static gerarCSV(dados: DadosConvertidos[]): string {
     if (dados.length === 0) return '';
 
     const cabecalhoColunas = [...COLUNAS_TEMPLATE.map(col => col.id), 'Quantidade_Minima'];
@@ -289,7 +311,7 @@ export class ConversorPlanilha {
     const linhas = dados.map(linha => {
       return cabecalhoColunas.map(col => {
         const valor = linha[col];
-        const valorStr = String(valor);
+        const valorStr = String(valor ?? '');
         if (valorStr.includes(',') || valorStr.includes('"') || valorStr.includes('\n') || valorStr.includes('\r')) {
           return `"${valorStr.replace(/"/g, '""')}"`;
         }
@@ -300,7 +322,7 @@ export class ConversorPlanilha {
     return [cabecalho, ...linhas].join('\n');
   }
 
-  static baixarCSV(dados: Record<string, any>[], nomeArquivo: string = 'template_stockcontrol.csv') {
+  static baixarCSV(dados: DadosConvertidos[], nomeArquivo: string = 'template_stockcontrol.csv') {
     const csvContent = this.gerarCSV(dados);
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -315,7 +337,7 @@ export class ConversorPlanilha {
     document.body.removeChild(link);
   }
 
-  private static parseCurrency(value: any): number {
+  private static parseCurrency(value: unknown): number {
     if (value === null || value === undefined) return 0;
     
     if (typeof value === 'number') {
@@ -358,7 +380,7 @@ export class ConversorPlanilha {
     return isNaN(result) ? 0 : parseFloat(result.toFixed(2));
   }
   
-  private static parseInteger(value: any): number {
+  private static parseInteger(value: unknown): number {
     if (value === null || value === undefined) return 0;
     
     if (typeof value === 'number') {
