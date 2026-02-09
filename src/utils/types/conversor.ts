@@ -1,5 +1,5 @@
 export interface LinhaOriginal {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface LinhaConvertida {
@@ -32,14 +32,14 @@ export interface PreviewData {
 
 export interface DebugInfo {
   coluna: string;
-  valor: any;
-  processado: any;
+  valor: unknown;
+  processado: unknown;
   tipo: string;
   status: 'ok' | 'erro' | 'aviso';
 }
 
 export interface ParseResult {
-  original: any;
+  original: unknown;
   processado: number;
   metodo: string;
   sucesso: boolean;
