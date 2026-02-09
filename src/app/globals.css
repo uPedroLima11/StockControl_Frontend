@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --cor-fundo-bloco: #ffffff;
@@ -7,7 +9,6 @@
   --cor-caixa-destaque: #013C3C;
 }
 
-
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #ffffff;
@@ -15,9 +16,8 @@
   }
 }
 
-
 body {
-  background-color: var(--cor-fundo);
+  background-color: var(--cor-fundo-bloco);
   color: var(--cor-fonte);
   font-family: Arial, Helvetica, sans-serif;
 }
