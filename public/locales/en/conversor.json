@@ -1,0 +1,123 @@
+{
+    "titulo": "Spreadsheet Converter",
+    "subtitulo": "Transform your spreadsheet into StockControl products",
+    "seguranca": "100% secure • Browser processing",
+    "processando": "Processing...",
+    "analisando": "Analyzing",
+    "produtos": "products",
+    "upload": {
+        "comece_aqui": "Start here!",
+        "arraste_clique": "Drag or click to select",
+        "selecionar_arquivo": "Select File",
+        "formatos": "Formats:",
+        "como_funciona": "How it works?",
+        "passo1_titulo": "Upload spreadsheet",
+        "passo1_desc": "Send CSV or Excel",
+        "passo2_titulo": "Automatic mapping",
+        "passo2_desc": "System detects columns",
+        "passo3_titulo": "Adjust if necessary",
+        "passo3_desc": "Confirm or adjust",
+        "passo4_titulo": "Download template",
+        "passo4_desc": "Download to import",
+        "passos": [
+            {
+                "icone": "📤",
+                "titulo": "Upload spreadsheet",
+                "descricao": "Send CSV or Excel"
+            },
+            {
+                "icone": "🎯",
+                "titulo": "Automatic mapping",
+                "descricao": "System detects columns"
+            },
+            {
+                "icone": "✏️",
+                "titulo": "Adjust if necessary",
+                "descricao": "Confirm or adjust"
+            },
+            {
+                "icone": "💾",
+                "titulo": "Download template",
+                "descricao": "Download to import"
+            }
+        ],
+        "formatos_suportados": "Supported formats:",
+        "exemplos_formatos": "R$ 340,00 • $1,234.56 • 1,234.56",
+        "campos_template": "Template Fields",
+        "obrigatorio": "REQ",
+        "opcional": "OPT",
+        "max_caracteres": "Max"
+    },
+    "mapeamento": {
+        "titulo": "Column Mapping",
+        "itens": "items",
+        "suas_colunas": "Your Columns",
+        "ocultar_exemplos": "Hide examples",
+        "mostrar_exemplos": "Show examples",
+        "vazio": "Empty",
+        "titulo_mapeamento": "Mapping",
+        "mais_informacoes": "More information",
+        "selecione": "Select",
+        "mapeado_para": "Mapped to",
+        "previa": "Preview",
+        "mostrando": "Showing",
+        "de": "of",
+        "colunas": {
+            "nome": "Name",
+            "descricao": "Description",
+            "preco": "Price",
+            "quantidade": "Quantity"
+        }
+    },
+    "preview": {
+        "titulo": "Preview",
+        "produtos": "products",
+        "avisos": "warnings",
+        "sem_nome": "No name",
+        "sem_preco": "No price",
+        "un": "units",
+        "total": "Total",
+        "completo": "Complete",
+        "com_preco": "With Price",
+        "com_avisos": "With Warnings",
+        "buscar_placeholder": "Search products...",
+        "nenhum_produto": "No products",
+        "ajuste_filtros": "Adjust search filters",
+        "pagina": "Page",
+        "itens": "items",
+        "mais": "more"
+    },
+    "concluido": {
+        "titulo": "Conversion Completed!",
+        "mensagem": "File converted successfully.",
+        "template_pronto": "Template Ready",
+        "csv_baixado": "CSV downloaded automatically",
+        "proximo_passo": "Next Step",
+        "importe_pagina": "Import on products page",
+        "dica": "Tip",
+        "problemas_volte": "Problems? Go back to converter to adjust."
+    },
+    "botoes": {
+        "voltar": "Back",
+        "auto": "Auto",
+        "converter": "Convert",
+        "limpar": "Clear",
+        "converter_todos": "Convert All",
+        "ajustar": "Adjust",
+        "nova": "New",
+        "baixar": "Download",
+        "nova_conversao": "New Conversion",
+        "ajustar_mapeamento": "Adjust Mapping",
+        "baixar_csv": "Download CSV",
+        "converter_outra": "Convert Another Spreadsheet",
+        "ir_produtos": "Go to Products"
+    },
+    "erros": {
+        "formato_nao_suportado": "Format not supported",
+        "use_formatos": "Use .csv, .xlsx or .xls files",
+        "arquivo_muito_grande": "File too large",
+        "tamanho_maximo": "Maximum size is 10MB",
+        "erro_processar_arquivo": "Error processing file",
+        "erro_desconhecido": "Unknown error"
+    }
+}

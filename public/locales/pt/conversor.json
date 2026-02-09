@@ -1,0 +1,123 @@
+{
+    "titulo": "Conversor de Planilhas",
+    "subtitulo": "Transforme sua planilha em produtos do StockControl",
+    "seguranca": "100% seguro • Processamento no navegador",
+    "processando": "Processando...",
+    "analisando": "Analisando",
+    "produtos": "produtos",
+    "upload": {
+        "comece_aqui": "Comece aqui!",
+        "passo1_titulo": "Upload da planilha",
+        "passo1_desc": "Envie CSV ou Excel",
+        "passo2_titulo": "Mapeamento automático",
+        "passo2_desc": "Sistema detecta colunas",
+        "passo3_titulo": "Ajuste se necessário",
+        "passo3_desc": "Confirme ou ajuste",
+        "passo4_titulo": "Download do template",
+        "passo4_desc": "Baixe para importar",
+        "arraste_clique": "Arraste ou clique para selecionar",
+        "selecionar_arquivo": "Selecionar Arquivo",
+        "formatos": "Formatos:",
+        "como_funciona": "Como funciona?",
+        "passos": [
+            {
+                "icone": "📤",
+                "titulo": "Upload da planilha",
+                "descricao": "Envie CSV ou Excel"
+            },
+            {
+                "icone": "🎯",
+                "titulo": "Mapeamento automático",
+                "descricao": "Sistema detecta colunas"
+            },
+            {
+                "icone": "✏️",
+                "titulo": "Ajuste se necessário",
+                "descricao": "Confirme ou ajuste"
+            },
+            {
+                "icone": "💾",
+                "titulo": "Download do template",
+                "descricao": "Baixe para importar"
+            }
+        ],
+        "formatos_suportados": "Formatos suportados:",
+        "exemplos_formatos": "R$ 340,00 • $1,234.56 • 1.234,56",
+        "campos_template": "Campos do Template",
+        "obrigatorio": "OBR",
+        "opcional": "OPC",
+        "max_caracteres": "Máx"
+    },
+    "mapeamento": {
+        "titulo": "Mapeamento de Colunas",
+        "itens": "itens",
+        "suas_colunas": "Suas Colunas",
+        "ocultar_exemplos": "Ocultar exemplos",
+        "mostrar_exemplos": "Mostrar exemplos",
+        "vazio": "Vazio",
+        "titulo_mapeamento": "Mapeamento",
+        "mais_informacoes": "Mais informações",
+        "selecione": "Selecione",
+        "mapeado_para": "Mapeado para",
+        "previa": "Pré-visualização",
+        "mostrando": "Mostrando",
+        "de": "de",
+        "colunas": {
+            "nome": "Nome",
+            "descricao": "Descricao",
+            "preco": "Preco",
+            "quantidade": "Quantidade"
+        }
+    },
+    "preview": {
+        "titulo": "Pré-visualização",
+        "produtos": "produtos",
+        "avisos": "avisos",
+        "sem_nome": "Sem nome",
+        "sem_preco": "Sem preço",
+        "un": "un",
+        "total": "Total",
+        "completo": "Completo",
+        "com_preco": "Com Preço",
+        "com_avisos": "Com Avisos",
+        "buscar_placeholder": "Buscar produtos...",
+        "nenhum_produto": "Nenhum produto",
+        "ajuste_filtros": "Ajuste os filtros de busca",
+        "pagina": "Pág.",
+        "itens": "itens",
+        "mais": "mais"
+    },
+    "concluido": {
+        "titulo": "Conversão Concluída!",
+        "mensagem": "Arquivo convertido com sucesso.",
+        "template_pronto": "Template Pronto",
+        "csv_baixado": "CSV baixado automaticamente",
+        "proximo_passo": "Próximo Passo",
+        "importe_pagina": "Importe na página de produtos",
+        "dica": "Dica",
+        "problemas_volte": "Problemas? Volte ao conversor para ajustar."
+    },
+    "botoes": {
+        "voltar": "Voltar",
+        "auto": "Auto",
+        "converter": "Converter",
+        "limpar": "Limpar",
+        "converter_todos": "Converter Todos",
+        "ajustar": "Ajustar",
+        "nova": "Nova",
+        "baixar": "Baixar",
+        "nova_conversao": "Nova Conversão",
+        "ajustar_mapeamento": "Ajustar Mapeamento",
+        "baixar_csv": "Baixar CSV",
+        "converter_outra": "Converter Outra Planilha",
+        "ir_produtos": "Ir para Produtos"
+    },
+    "erros": {
+        "formato_nao_suportado": "Formato não suportado",
+        "use_formatos": "Use arquivos .csv, .xlsx ou .xls",
+        "arquivo_muito_grande": "Arquivo muito grande",
+        "tamanho_maximo": "O tamanho máximo é 10MB",
+        "erro_processar_arquivo": "Erro ao processar arquivo",
+        "erro_desconhecido": "Erro desconhecido"
+    }
+}

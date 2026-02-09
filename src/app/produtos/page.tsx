@@ -4,13 +4,14 @@ import { ProdutoI } from "@/utils/types/produtos";
 import { FornecedorI } from "@/utils/types/fornecedor";
 import { CategoriaI } from "@/utils/types/categoria";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { FaSearch, FaCog, FaLock, FaChevronDown, FaAngleLeft, FaAngleRight, FaStar, FaRegStar, FaQuestionCircle, FaTimes, FaFilter, FaBox, FaExclamationTriangle, FaCheck, FaPlus, FaEdit, FaTrash, FaEye, FaWarehouse } from "react-icons/fa";
+import { FaSearch, FaCog, FaLock, FaChevronDown, FaAngleLeft, FaAngleRight, FaStar, FaRegStar, FaQuestionCircle, FaTimes, FaFilter, FaBox, FaExclamationTriangle, FaCheck, FaPlus, FaEdit, FaTrash, FaEye, FaWarehouse, FaUpload, FaCheckSquare, FaRegSquare, FaTrashAlt } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "next/navigation";
 import MovimentacaoEstoqueModal from "@/components/MovimentacaoEstoqueModal";
 import Image from "next/image";
 import Swal from "sweetalert2";
 import Cookies from "js-cookie";
+import UploadProdutosModal from '@/components/UploadProdutosModal';
 
 type CampoOrdenacao = "nome" | "estoque" | "preco" | "categoria" | "fornecedor" | "none";
 type DirecaoOrdenacao = "asc" | "desc";
@@ -77,6 +78,7 @@ export default function Produtos() {
   const [cotacaoDolar, setCotacaoDolar] = useState(6);
   const [loading, setLoading] = useState(true);
   type TipoVisualizacao = "cards" | "lista";
+  const [modalUploadAberto, setModalUploadAberto] = useState(false);
   const descricaoRef = useRef<HTMLTextAreaElement>(null);
   const [tipoVisualizacao, setTipoVisualizacao] = useState<TipoVisualizacao>("cards");
   const [stats, setStats] = useState({
@@ -97,6 +99,9 @@ export default function Produtos() {
     nome: string;
     quantidade: number;
   } | null>(null);
+
+  const [produtosSelecionados, setProdutosSelecionados] = useState<Set<string>>(new Set());
+  const [mostrarControlesSelecao, setMostrarControlesSelecao] = useState(false);
 
   const [form, setForm] = useState<ProdutoI>({
     id: "",
@@ -148,6 +153,128 @@ export default function Produtos() {
     [adjustTextareaHeight]
   );
 
+  const toggleSelecionarProduto = (produtoId: string) => {
+    setProdutosSelecionados(prev => {
+      const novoSet = new Set(prev);
+      if (novoSet.has(produtoId)) {
+        novoSet.delete(produtoId);
+      } else {
+        novoSet.add(produtoId);
+      }
+
+      if (novoSet.size > 0) {
+        localStorage.setItem('produtos_selecionados', JSON.stringify(Array.from(novoSet)));
+      } else {
+        localStorage.removeItem('produtos_selecionados');
+      }
+
+      return novoSet;
+    });
+  };
+
+  const selecionarTodosDaPagina = () => {
+    const idsDaPagina = produtosAtuais.map(p => p.id);
+    setProdutosSelecionados(prev => {
+      const novoSet = new Set(prev);
+      idsDaPagina.forEach(id => novoSet.add(id));
+
+      localStorage.setItem('produtos_selecionados', JSON.stringify(Array.from(novoSet)));
+
+      return novoSet;
+    });
+  };
+
+  const desmarcarTodosDaPagina = () => {
+    const idsDaPagina = produtosAtuais.map(p => p.id);
+    setProdutosSelecionados(prev => {
+      const novoSet = new Set(prev);
+      idsDaPagina.forEach(id => novoSet.delete(id));
+
+      if (novoSet.size > 0) {
+        localStorage.setItem('produtos_selecionados', JSON.stringify(Array.from(novoSet)));
+      } else {
+        localStorage.removeItem('produtos_selecionados');
+      }
+
+      return novoSet;
+    });
+  };
+
+  const excluirProdutosSelecionados = async () => {
+    if (produtosSelecionados.size === 0) return;
+
+    handleAcaoProtegida(async () => {
+      const result = await Swal.fire({
+        title: t("confirmacaoExclusaoMultipla.titulo", { count: produtosSelecionados.size }),
+        text: t("confirmacaoExclusaoMultipla.mensagem"),
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: t("confirmacaoExclusaoMultipla.botaoConfirmar"),
+        cancelButtonText: t("confirmacaoExclusaoMultipla.botaoCancelar"),
+        background: modoDark ? temaAtual.card : "#FFFFFF",
+        color: modoDark ? temaAtual.texto : temaAtual.texto,
+      });
+
+      if (result.isConfirmed) {
+        try {
+          const usuarioSalvo = localStorage.getItem("client_key");
+          if (!usuarioSalvo) return;
+          const usuarioValor = usuarioSalvo.replace(/"/g, "");
+
+          const promises = Array.from(produtosSelecionados).map(async (produtoId) => {
+            try {
+              await fetch(`${process.env.NEXT_PUBLIC_URL_API}/produtos/${produtoId}`, {
+                method: "DELETE",
+                headers: {
+                  "user-id": usuarioValor,
+                  Authorization: `Bearer ${Cookies.get("token")}`,
+                },
+              });
+              return { success: true, id: produtoId };
+            } catch (error) {
+              console.error(`Erro ao excluir produto ${produtoId}:`, error);
+              return { success: false, id: produtoId };
+            }
+          });
+
+          const resultados = await Promise.all(promises);
+          const sucessos = resultados.filter(r => r.success).length;
+          const falhas = resultados.filter(r => !r.success).length;
+
+          setProdutosSelecionados(new Set());
+          localStorage.removeItem('produtos_selecionados');
+
+          if (falhas === 0) {
+            Swal.fire({
+              title: t("produtosExcluidosSucesso.titulo", { count: sucessos }),
+              text: t("produtosExcluidosSucesso.mensagem"),
+              icon: "success",
+              confirmButtonText: "OK",
+              background: modoDark ? temaAtual.card : "#FFFFFF",
+              color: modoDark ? temaAtual.texto : temaAtual.texto,
+            });
+          } else {
+            Swal.fire({
+              title: t("produtosExcluidosParcial.titulo"),
+              html: `${sucessos} ${t("produtosExcluidosParcial.sucessos")}<br>${falhas} ${t("produtosExcluidosParcial.falhas")}`,
+              icon: "warning",
+              confirmButtonText: "OK",
+              background: modoDark ? temaAtual.card : "#FFFFFF",
+              color: modoDark ? temaAtual.texto : temaAtual.texto,
+            });
+          }
+
+          recarregarListaProdutos();
+        } catch (error) {
+          console.error("Erro ao excluir produtos:", error);
+          Swal.fire("Erro!", "Não foi possível excluir os produtos.", "error");
+        }
+      }
+    });
+  };
+
   useEffect(() => {
     const temaSalvo = localStorage.getItem("modoDark");
     const ativado = temaSalvo === "true";
@@ -165,12 +292,21 @@ export default function Produtos() {
   }, []);
 
   useEffect(() => {
+    const salvos = localStorage.getItem('produtos_selecionados');
+    if (salvos) {
+      try {
+        const ids = JSON.parse(salvos) as string[];
+        setProdutosSelecionados(new Set(ids));
+      } catch (error) {
+        console.error("Erro ao carregar seleção:", error);
+      }
+    }
+
     const token = Cookies.get("token");
     if (!token) {
       window.location.href = "/login";
       return;
     }
-
 
     const initialize = async () => {
       setLoading(true);
@@ -541,6 +677,10 @@ export default function Produtos() {
       setPreview(null);
     }
   }, [modalAberto, modalVisualizar]);
+
+  useEffect(() => {
+    setMostrarControlesSelecao(produtosSelecionados.size > 0);
+  }, [produtosSelecionados.size]);
 
   const recarregarListaProdutos = () => {
     setRecarregarProdutos((prev) => prev + 1);
@@ -1169,6 +1309,7 @@ export default function Produtos() {
 
   const temFiltroAtivo = filtroCategoria || tipoFiltroAtivo !== "none";
 
+  const podeUploadProdutos = tipoUsuario === "PROPRIETARIO" || permissoesUsuario.produtos_criar;
   const podeVisualizar = tipoUsuario === "PROPRIETARIO" || permissoesUsuario.produtos_visualizar;
   const podeCriar = tipoUsuario === "PROPRIETARIO" || permissoesUsuario.produtos_criar;
   const podeEditar = tipoUsuario === "PROPRIETARIO" || permissoesUsuario.produtos_editar;
@@ -1281,6 +1422,39 @@ export default function Produtos() {
                 <div className="flex-1">
                   <p className={`font-bold ${textPrimary} text-sm`}>{t("empresaNaoAtivada.alertaTitulo")}</p>
                   <p className={textMuted}>{t("empresaNaoAtivada.alertaMensagem")}</p>
+                </div>
+              </div>
+            )}
+
+            {(mostrarControlesSelecao || produtosSelecionados.size > 0) && (
+              <div className={`mb-4 p-4 rounded-2xl ${modoDark ? "bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/30" : "bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200"}`}>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 ${modoDark ? "bg-blue-500/20" : "bg-blue-100"} rounded-xl`}>
+                      <FaCheckSquare className={`text-lg ${modoDark ? "text-blue-400" : "text-blue-500"}`} />
+                    </div>
+                    <div>
+                      <p className={`font-bold ${textPrimary} text-sm`}>
+                        {t("produtosSelecionados.titulo", { count: produtosSelecionados.size })}
+                      </p>
+                      <p className={textMuted}>{t("produtosSelecionados.mensagem")}</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={excluirProdutosSelecionados}
+                      disabled={produtosSelecionados.size === 0}
+                      className={`px-4 py-2 rounded-xl transition-all duration-300 flex items-center gap-2 text-sm font-semibold ${produtosSelecionados.size === 0 ? "opacity-50 cursor-not-allowed" : "hover:scale-105"} shadow-lg`}
+                      style={{
+                        background: modoDark ? "linear-gradient(135deg, #EF4444, #DC2626)" : "linear-gradient(135deg, #EF4444, #DC2626)",
+                        color: "#FFFFFF",
+                      }}
+                    >
+                      <FaTrashAlt size={14} />
+                      {t("excluirSelecionados")} ({produtosSelecionados.size})
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -1431,6 +1605,18 @@ export default function Produtos() {
                     </div>
                   </button>
                 </div>
+                {podeUploadProdutos && empresaAtivada && (
+                  <button
+                    onClick={() => handleAcaoProtegida(() => setModalUploadAberto(true))}
+                    className={`cursor-pointer px-6 py-3 rounded-xl transition-all duration-300 font-semibold text-white flex items-center gap-2 hover:scale-105 shadow-lg text-sm ${modoDark
+                        ? "bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 shadow-emerald-500/25"
+                        : "bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-600 hover:to-teal-500 shadow-emerald-400/30"
+                      }`}
+                  >
+                    <FaUpload className="text-sm" />
+                    {t("upload.produtos")}
+                  </button>
+                )}
                 {podeCriar && empresaAtivada && (
                   <button onClick={() => handleAcaoProtegida(() => setModalAberto(true))} className="px-6 py-3 bg-gradient-to-r cursor-pointer from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 rounded-xl transition-all duration-300 font-semibold text-white flex items-center gap-2 hover:scale-105 shadow-lg shadow-blue-500/25 text-sm">
                     <FaPlus className="text-sm" />
@@ -1439,6 +1625,47 @@ export default function Produtos() {
                 )}
               </div>
             </div>
+
+            {produtosAtuais.length > 0 && (
+              <div className="mb-4 flex items-center justify-between">
+                <button
+                  onClick={() => {
+                    const todosSelecionados = produtosAtuais.every(p => produtosSelecionados.has(p.id));
+                    if (todosSelecionados) {
+                      desmarcarTodosDaPagina();
+                    } else {
+                      selecionarTodosDaPagina();
+                    }
+                  }}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 text-sm ${modoDark ? "hover:bg-blue-500/20" : "hover:bg-blue-100"} ${textPrimary}`}
+                >
+                  {produtosAtuais.every(p => produtosSelecionados.has(p.id)) ? (
+                    <>
+                      <FaCheckSquare className={modoDark ? "text-blue-400" : "text-blue-500"} />
+                      <span>{t("desmarcarTodosPagina")}</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaRegSquare className={modoDark ? "text-blue-400" : "text-blue-500"} />
+                      <span>{t("selecionarTodosPagina")}</span>
+                    </>
+                  )}
+                </button>
+
+                {produtosSelecionados.size > 0 && (
+                  <button
+                    onClick={() => {
+                      setProdutosSelecionados(new Set());
+                      localStorage.removeItem('produtos_selecionados');
+                    }}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 text-sm ${modoDark ? "hover:bg-red-500/20 text-red-400" : "hover:bg-red-100 text-red-500"}`}
+                  >
+                    <FaTimes size={12} />
+                    <span>{t("limparSelecao")}</span>
+                  </button>
+                )}
+              </div>
+            )}
 
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -1474,11 +1701,44 @@ export default function Produtos() {
                     {produtosAtuais.map((produto, index) => (
                       <div
                         key={produto.id}
-                        className={`group ${modoDark ? "bg-gradient-to-br from-blue-500/5 to-cyan-500/5" : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"} rounded-xl border ${modoDark ? "border-blue-500/20 hover:border-blue-500/40" : "border-blue-200 hover:border-blue-300"} p-4 transition-all duration-500 card-hover backdrop-blur-sm`}
+                        className={`group relative ${produtosSelecionados.has(produto.id)
+                            ? modoDark
+                              ? "ring-2 ring-blue-500/50 bg-gradient-to-br from-blue-500/10 to-cyan-500/10"
+                              : "ring-2 ring-blue-400 bg-gradient-to-br from-blue-100/50 to-cyan-100/50"
+                            : modoDark
+                              ? "bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
+                              : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"
+                          } rounded-xl border ${modoDark
+                            ? produtosSelecionados.has(produto.id)
+                              ? "border-blue-500/50"
+                              : "border-blue-500/20 hover:border-blue-500/40"
+                            : produtosSelecionados.has(produto.id)
+                              ? "border-blue-400"
+                              : "border-blue-200 hover:border-blue-300"
+                          } p-4 transition-all duration-500 card-hover backdrop-blur-sm`}
                         style={{
                           animationDelay: `${index * 100}ms`,
                         }}
                       >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelecionarProduto(produto.id);
+                          }}
+                          className={`absolute top-2 left-2 z-20 p-1.5 rounded-lg transition-all duration-300 backdrop-blur-sm ${produtosSelecionados.has(produto.id)
+                              ? "bg-blue-500 text-white"
+                              : modoDark
+                                ? "bg-slate-800/80 text-gray-300 hover:bg-slate-700/80"
+                                : "bg-white/80 text-gray-600 hover:bg-white"
+                            }`}
+                        >
+                          {produtosSelecionados.has(produto.id) ? (
+                            <FaCheckSquare size={14} />
+                          ) : (
+                            <FaRegSquare size={14} />
+                          )}
+                        </button>
+
                         <div className="relative mb-3 overflow-hidden rounded-lg">
                           <Image
                             src={produto.foto || "/out.jpg"}
@@ -1602,8 +1862,44 @@ export default function Produtos() {
                 ) : (
                   <div className="space-y-3 mb-6">
                     {produtosAtuais.map((produto) => (
-                      <div key={produto.id} className={`${modoDark ? "bg-slate-800/50" : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"} rounded-xl border ${modoDark ? "border-blue-500/20" : "border-blue-200"} p-4 transition-all duration-300 hover:shadow-lg backdrop-blur-sm`}>
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                      <div
+                        key={produto.id}
+                        className={`relative ${produtosSelecionados.has(produto.id)
+                            ? modoDark
+                              ? "ring-2 ring-blue-500/50 bg-gradient-to-br from-blue-500/10 to-cyan-500/10"
+                              : "ring-2 ring-blue-400 bg-gradient-to-br from-blue-100/50 to-cyan-100/50"
+                            : modoDark
+                              ? "bg-slate-800/50"
+                              : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"
+                          } rounded-xl border ${modoDark
+                            ? produtosSelecionados.has(produto.id)
+                              ? "border-blue-500/50"
+                              : "border-blue-500/20"
+                            : produtosSelecionados.has(produto.id)
+                              ? "border-blue-400"
+                              : "border-blue-200"
+                          } p-4 transition-all duration-300 hover:shadow-lg backdrop-blur-sm`}
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelecionarProduto(produto.id);
+                          }}
+                          className={`absolute top-4 left-4 flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-lg transition-all duration-300 ${produtosSelecionados.has(produto.id)
+                              ? "bg-blue-500 text-white"
+                              : modoDark
+                                ? "bg-slate-800/50 text-gray-300 hover:bg-slate-700/50"
+                                : "bg-slate-100 text-gray-600 hover:bg-slate-200"
+                            }`}
+                        >
+                          {produtosSelecionados.has(produto.id) ? (
+                            <FaCheckSquare size={14} />
+                          ) : (
+                            <FaRegSquare size={14} />
+                          )}
+                        </button>
+
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 pl-12 md:pl-4">
                           <div className="flex-shrink-0">
                             <Image
                               src={produto.foto || "/out.jpg"}
@@ -2009,6 +2305,14 @@ export default function Produtos() {
           </div>
         </div>
       </div>
+      <UploadProdutosModal
+        isOpen={modalUploadAberto}
+        onClose={() => setModalUploadAberto(false)}
+        onSuccess={recarregarListaProdutos}
+        modoDark={modoDark}
+        empresaAtivada={empresaAtivada}
+        empresaId={empresaId}
+      />
     </div>
   );
 }

@@ -23,15 +23,91 @@
     "Automotivos": "Automotive",
     "Ferramentas": "Tools",
     "Jardinagem": "Gardening",
-    "Informática": "Computing",
+    "Informática": "Computers",
     "Farmácia": "Pharmacy",
     "Limpeza": "Cleaning",
     "Decoração": "Decoration",
     "Sem Categoria": "Uncategorized"
   },
+  "produtosSelecionados": {
+    "titulo": "{{count}} product(s) selected",
+    "mensagem": "Selected products are marked. You can delete them in bulk."
+  },
+  "confirmacaoExclusaoMultipla": {
+    "titulo": "Delete {{count}} product(s)?",
+    "mensagem": "This action cannot be undone. All selected products will be permanently deleted.",
+    "botaoConfirmar": "Yes, delete",
+    "botaoCancelar": "Cancel"
+  },
+  "produtosExcluidosSucesso": {
+    "titulo": "{{count}} product(s) deleted",
+    "mensagem": "Products were successfully deleted."
+  },
+  "produtosExcluidosParcial": {
+    "titulo": "Partial deletion",
+    "sucessos": "products successfully deleted",
+    "falhas": "deletion failures"
+  },
+  "selecionarTodosPagina": "Select all (current page)",
+  "desmarcarTodosPagina": "Unselect all (current page)",
+  "excluirSelecionados": "Delete selected",
+  "limparSelecao": "Clear selection",
+
+  "upload": {
+    "titulo": "Bulk Product Import",
+    "subtitulo": "Upload an Excel or CSV file to register multiple products at once",
+    "arrasteSolte": "Drag and drop your file here",
+    "selecionarArquivo": "Select file",
+    "tipoInvalido": "Invalid file type",
+    "formatoSuportado": "Supported formats: .xlsx, .xls, .csv (up to 10MB)",
+    "tamanhoExcedido": "File too large",
+    "tamanhoMaximo": "Maximum size is 10MB",
+    "importante": "Important information",
+    "camposObrigatorios": "Required fields: Name and Description",
+    "descricaoAutomatica": "Empty descriptions will be filled automatically",
+    "quantidadeMinimaPadrao": "Default minimum quantity: 10 units",
+    "naoTemTemplate": "Don't have a ready spreadsheet?",
+    "baixeTemplate": "Download our template with the correct format",
+    "baixarTemplate": "Download Template",
+    "trocarArquivo": "Change file",
+    "preview": "Preview",
+    "conteudo": "Content",
+    "processando": "Processing...",
+    "iniciarImportacao": "Start Import",
+    "sucesso": "Import completed!",
+    "resumo": "Import summary:",
+    "totalProcessados": "Total processed",
+    "criadosComSucesso": "Successfully created",
+    "comErros": "With errors",
+    "errosEncontrados": "Errors found",
+    "erro": "Import error",
+    "erroConexao": "Connection error",
+    "tenteNovamente": "Try again later",
+    "concluir": "Finish",
+    "produtos": "Import Products",
+    "comErrosValidacao": "With validation errors",
+    "errosCriacao": "Creation errors",
+    "templateBaixado": "Template downloaded",
+    "templateBaixadoMensagem": "Template downloaded successfully! Fill it out and upload.",
+    "erroTemplate": "Error downloading template",
+    "dicasRapidas": "Quick Tips",
+    "avisoValidacao": "Validation Pending",
+    "avisoValidacaoMensagem": "The file will be validated during upload. Errors will be shown before import.",
+    "voltarListagem": "Back to list",
+    "novaImportacao": "New Import"
+  },
+  "conversor": {
+    "titulo": "Spreadsheet Converter",
+    "subtitulo": "Convert your spreadsheet to the StockControl format",
+    "abrir": "Open Converter",
+    "converter": "Convert",
+    "sugestaoTitulo": "Found errors?",
+    "sugestaoMensagem": "Use our converter to automatically fix formatting issues.",
+    "usarConversor": "Use Converter"
+  },
   "titulo": "Your",
   "produtos": "Products",
-  "subtitulo": "Manage your entire inventory intelligently and organized",
+  "subtitulo": "Manage your entire inventory in a smart and organized way",
   "stats": {
     "total": "Total",
     "emEstoque": "In Stock",
@@ -75,12 +151,12 @@
   "visualizacaoLabel": "View",
   "quantidadeMinima": "Minimum Quantity",
   "quantidadeMinimaPlaceholder": "Minimum quantity",
-  "quantidadeMinimaTooltip": "Minimum stock quantity for restocking alerts",
+  "quantidadeMinimaTooltip": "Minimum stock quantity for restock alerts",
   "foto": "Photo",
   "selecionarImagem": "Select Image",
   "selecionarFornecedor": "Select Supplier",
-  "acessoRestrito": "Access Restricted",
-  "acessoRestritoMensagem": "You don't have permission to view this page.",
+  "acessoRestrito": "Restricted Access",
+  "acessoRestritoMensagem": "You do not have permission to view this page.",
   "selecionarCategoria": "Select Category",
   "incluirNoCatalogo": "Include in catalog",
   "excluir": "Delete",
@@ -113,7 +189,7 @@
   },
   "produtoExcluidoSucesso": {
     "titulo": "Product Deleted!",
-    "mensagem": "Your product has been successfully deleted."
+    "mensagem": "Your product was successfully deleted."
   },
   "produtoAdicionadoCatalogo": {
     "titulo": "Product added to catalog!"

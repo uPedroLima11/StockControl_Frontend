@@ -56,6 +56,8 @@ import notificacoesen from '../public/locales/en/notificacoes.json';
 import notificacoespt from '../public/locales/pt/notificacoes.json';
 import errospt from '../public/locales/pt/erros.json';
 import errosen from '../public/locales/en/erros.json';
+import conversorpt from '../public/locales/pt/conversor.json';
+import conversoren from '../public/locales/en/conversor.json';
 
 
 
@@ -66,7 +68,7 @@ if (!i18n.isInitialized) {
     .init({
       fallbackLng: 'pt',
       supportedLngs: ['pt', 'en'],
-      ns: ['settings', 'sidebar', 'dashboard', 'erros', 'notificacoes', 'verificacao', 'login', 'registro', 'navbar', 'landing', 'ajuda', 'pedidos', 'produtos', 'usuarios', 'conta', 'empresa', 'criarempresa', 'vendas', 'ativacao', 'fornecedores', 'suporte', 'logs', 'esqueci', 'alteracao', 'clientes', 'exportacoes', 'estoque'],
+      ns: ['settings', 'sidebar', 'conversor', 'dashboard', 'erros', 'notificacoes', 'verificacao', 'login', 'registro', 'navbar', 'landing', 'ajuda', 'pedidos', 'produtos', 'usuarios', 'conta', 'empresa', 'criarempresa', 'vendas', 'ativacao', 'fornecedores', 'suporte', 'logs', 'esqueci', 'alteracao', 'clientes', 'exportacoes', 'estoque'],
       defaultNS: 'settings',
       resources: {
         en: {
@@ -96,7 +98,8 @@ if (!i18n.isInitialized) {
           registro: registroen,
           verificacao: verificacaoen,
           notificacoes: notificacoesen,
-          erros: errosen  
+          erros: errosen,
+          conversor: conversoren
 
         },
         pt: {
@@ -126,7 +129,8 @@ if (!i18n.isInitialized) {
           registro: registropt,
           verificacao: verificacao,
           notificacoes: notificacoespt,
-          erros: errospt
+          erros: errospt,
+          conversor: conversorpt
         },
       },
       detection: {
