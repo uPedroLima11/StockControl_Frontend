@@ -16,7 +16,6 @@ export const COLUNAS_TEMPLATE: ColunaTemplate[] = [
   { id: 'Quantidade', obrigatorio: false, descricao: 'Quantidade em estoque', tipo: 'integer' },
 ];
 
-// Definindo interfaces para os dados
 export interface DadosOriginais {
   [key: string]: unknown;
 }
@@ -131,7 +130,7 @@ export class ConversorPlanilha {
       const colunas = Object.keys(dados[0]);
       resolve({ colunasOriginais: colunas, dadosOriginais: dados });
     } catch (error) {
-      reject(new Error('Erro ao processar Excel'));
+      reject(error instanceof Error ? error : new Error('Erro ao processar Excel'));
     }
   }
 
