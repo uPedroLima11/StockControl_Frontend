@@ -196,16 +196,22 @@ export default function Usuarios() {
               const todosUsuarios = await responseUsuarios.json();
               const usuariosDaEmpresa = todosUsuarios
                 .filter((u: UsuarioI) => u.empresaId === usuario.empresaId)
-                .sort((a: UsuarioI, b: UsuarioI) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+                .sort((a: UsuarioI, b: UsuarioI) => {
+                  const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                  const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                  return dateB - dateA;
+                });
+              const usuariosDaEmpresaOrdenados = usuariosDaEmpresa
+                .sort((a: UsuarioI, b: UsuarioI) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
 
-              setUsuarios(usuariosDaEmpresa);
+              setUsuarios(usuariosDaEmpresaOrdenados);
 
-              const proprietarios = usuariosDaEmpresa.filter((u: UsuarioI) => u.tipo === "PROPRIETARIO").length;
-              const admins = usuariosDaEmpresa.filter((u: UsuarioI) => u.tipo === "ADMIN").length;
-              const funcionarios = usuariosDaEmpresa.filter((u: UsuarioI) => u.tipo === "FUNCIONARIO").length;
+              const proprietarios = usuariosDaEmpresaOrdenados.filter((u: UsuarioI) => u.tipo === "PROPRIETARIO").length;
+              const admins = usuariosDaEmpresaOrdenados.filter((u: UsuarioI) => u.tipo === "ADMIN").length;
+              const funcionarios = usuariosDaEmpresaOrdenados.filter((u: UsuarioI) => u.tipo === "FUNCIONARIO").length;
 
               setStats({
-                total: usuariosDaEmpresa.length,
+                total: usuariosDaEmpresaOrdenados.length,
                 proprietarios,
                 admins,
                 funcionarios,
@@ -506,8 +512,8 @@ export default function Usuarios() {
           valorB = b.tipo.toLowerCase();
           break;
         case "dataCriacao":
-          valorA = new Date(a.createdAt).getTime();
-          valorB = new Date(b.createdAt).getTime();
+          valorA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          valorB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           break;
         default:
           return 0;
@@ -523,7 +529,8 @@ export default function Usuarios() {
     });
   };
 
-  const formatarData = (dataString: string | Date) => {
+  const formatarData = (dataString: string | Date | undefined) => {
+    if (!dataString) return "-";
     const data = new Date(dataString);
     return data.toLocaleDateString("pt-BR", {
       day: "2-digit",
