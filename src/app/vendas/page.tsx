@@ -33,6 +33,8 @@ export default function Vendas() {
     clientesAtendidos: 0,
     ticketMedio: 0,
   });
+  const [showTooltipFinalizar, setShowTooltipFinalizar] = useState(false);
+  const tooltipTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const { t, i18n } = useTranslation("vendas");
   const [cotacaoDolar, setCotacaoDolar] = useState(5.0);
@@ -68,12 +70,23 @@ export default function Vendas() {
     return preco;
   };
 
+  const [valoresInput, setValoresInput] = useState<Record<string, string>>({});
+  const [inputEmFoco, setInputEmFoco] = useState<string | null>(null);
+
   useEffect(() => {
     const visualizacaoSalva = localStorage.getItem("vendas_visualizacao") as TipoVisualizacao;
     if (visualizacaoSalva && (visualizacaoSalva === "cards" || visualizacaoSalva === "lista")) {
       setTipoVisualizacao(visualizacaoSalva);
     }
   }, []);
+
+  useEffect(() => {
+    const novosValores: Record<string, string> = {};
+    carrinho.forEach(item => {
+      novosValores[item.produto.id] = item.quantidade.toString();
+    });
+    setValoresInput(novosValores);
+  }, [carrinho]);
 
   const alterarVisualizacao = (novoTipo: TipoVisualizacao) => {
     setTipoVisualizacao(novoTipo);
@@ -104,6 +117,34 @@ export default function Vendas() {
     }
   };
 
+  // Função para carregar produtos aptos para venda (com estoque > 0)
+  const carregarProdutosAptosParaVenda = async (empresaIdParam: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/produtos`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Cookies.get("token")}`,
+        },
+      });
+      
+      if (response.ok) {
+        const todosProdutos: ProdutoI[] = await response.json();
+        // Filtra apenas produtos da empresa, com estoque > 0, não arquivados e ativos
+        const produtosAptos = todosProdutos.filter((p) => 
+          p.empresaId === empresaIdParam && 
+          p.quantidade > 0 && 
+          p.ativo !== false && 
+          !p.arquivado
+        );
+        setProdutos(produtosAptos);
+        return produtosAptos;
+      }
+      return [];
+    } catch (error) {
+      console.error("Erro ao carregar produtos aptos:", error);
+      return [];
+    }
+  };
 
   useEffect(() => {
     const temaSalvo = localStorage.getItem("modoDark");
@@ -216,15 +257,8 @@ export default function Vendas() {
         const ativada = await verificarAtivacaoEmpresa(usuario.empresaId);
         setEmpresaAtivada(ativada);
 
-        const responseProdutos = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/produtos`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${Cookies.get("token")}`,
-          },
-        });
-        const todosProdutos: ProdutoI[] = await responseProdutos.json();
-        const produtosDaEmpresa = todosProdutos.filter((p) => p.empresaId === usuario.empresaId && p.quantidade > 0);
-        setProdutos(produtosDaEmpresa);
+        // Carrega apenas produtos aptos para venda
+        await carregarProdutosAptosParaVenda(usuario.empresaId);
 
         const responseClientes = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/clientes`, {
           headers: {
@@ -488,7 +522,16 @@ export default function Vendas() {
 
     if (itemExistente) {
       if (itemExistente.quantidade < produto.quantidade) {
-        setCarrinho(carrinho.map((item) => (item.produto.id === produto.id ? { ...item, quantidade: item.quantidade + 1 } : item)));
+        const novaQuantidade = itemExistente.quantidade + 1;
+        setCarrinho(carrinho.map((item) => 
+          item.produto.id === produto.id 
+            ? { ...item, quantidade: novaQuantidade } 
+            : item
+        ));
+        setValoresInput(prev => ({
+          ...prev,
+          [produto.id]: novaQuantidade.toString()
+        }));
       } else {
         Swal.fire({
           icon: "warning",
@@ -501,6 +544,10 @@ export default function Vendas() {
     } else {
       if (produto.quantidade > 0) {
         setCarrinho([...carrinho, { produto, quantidade: 1 }]);
+        setValoresInput(prev => ({
+          ...prev,
+          [produto.id]: "1"
+        }));
       } else {
         Swal.fire({
           icon: "warning",
@@ -513,41 +560,203 @@ export default function Vendas() {
     }
   };
 
+  const handleInputChange = (produtoId: string, valor: string) => {
+    const valorNumerico = valor.replace(/[^0-9]/g, '');
+    setValoresInput(prev => ({
+      ...prev,
+      [produtoId]: valorNumerico
+    }));
+  };
+
+  const handleInputFocus = (produtoId: string, quantidadeAtual: number) => {
+    setInputEmFoco(produtoId);
+    setValoresInput(prev => ({
+      ...prev,
+      [produtoId]: quantidadeAtual.toString()
+    }));
+  };
+
+  const aplicarQuantidadeInput = (produtoId: string) => {
+    const valorStr = valoresInput[produtoId];
+    let valorNumerico = valorStr === '' || valorStr === undefined ? 0 : parseInt(valorStr, 10);
+    
+    if (isNaN(valorNumerico)) {
+      valorNumerico = 0;
+    }
+
+    const produto = produtos.find((p) => p.id === produtoId);
+    
+    setCarrinho((prevCarrinho) => {
+      const itemExistente = prevCarrinho.find(item => item.produto.id === produtoId);
+      let novoCarrinho;
+      
+      if (valorNumerico === 0) {
+        if (itemExistente) {
+          novoCarrinho = prevCarrinho.map((item) => {
+            if (item.produto.id === produtoId) {
+              return { ...item, quantidade: 0 };
+            }
+            return item;
+          });
+        } else {
+          novoCarrinho = prevCarrinho;
+        }
+      } else {
+        if (!itemExistente && produto) {
+          novoCarrinho = [...prevCarrinho, { produto, quantidade: valorNumerico }];
+        } else {
+          novoCarrinho = prevCarrinho.map((item) => {
+            if (item.produto.id === produtoId) {
+              if (produto && valorNumerico > produto.quantidade) {
+                Swal.fire({
+                  icon: "warning",
+                  title: t("avisoEstoque"),
+                  text: t("quantidadeMaiorQueEstoque"),
+                  background: modoDark ? temaAtual.card : "#FFFFFF",
+                  color: modoDark ? temaAtual.texto : temaAtual.texto,
+                });
+                return { ...item, quantidade: produto.quantidade };
+              }
+              return { ...item, quantidade: valorNumerico };
+            }
+            return item;
+          });
+        }
+      }
+
+      setValoresInput(prev => {
+        const novosValores = { ...prev };
+        if (valorNumerico === 0) {
+          if (itemExistente || produto) {
+            novosValores[produtoId] = "0";
+          }
+        } else {
+          novosValores[produtoId] = valorNumerico.toString();
+        }
+        return novosValores;
+      });
+
+      return novoCarrinho || prevCarrinho;
+    });
+    
+    setInputEmFoco(null);
+  };
+
   const atualizarQuantidade = (produtoId: string, novaQuantidade: number) => {
     const produto = produtos.find((p) => p.id === produtoId);
-
+    
     setCarrinho((prevCarrinho) => {
-      return prevCarrinho
-        .map((item) => {
+      const itemExistente = prevCarrinho.find(item => item.produto.id === produtoId);
+      let novoCarrinho;
+      
+      if (novaQuantidade < 0) return prevCarrinho;
+      
+      if (novaQuantidade === 0) {
+        novoCarrinho = prevCarrinho.map((item) => {
           if (item.produto.id === produtoId) {
-            if (novaQuantidade < 0) return { ...item, quantidade: 0 };
-
-            if (produto && novaQuantidade > produto.quantidade) {
-              Swal.fire({
-                icon: "warning",
-                title: t("avisoEstoque"),
-                text: t("quantidadeMaiorQueEstoque"),
-                background: modoDark ? temaAtual.card : "#FFFFFF",
-                color: modoDark ? temaAtual.texto : temaAtual.texto,
-              });
-              return { ...item, quantidade: produto.quantidade };
-            }
-
-            return { ...item, quantidade: novaQuantidade };
+            return { ...item, quantidade: 0 };
           }
           return item;
-        })
-        .filter((item) => item.quantidade > 0);
+        });
+        setValoresInput(prev => ({
+          ...prev,
+          [produtoId]: "0"
+        }));
+      } else {
+        if (!itemExistente && produto) {
+          novoCarrinho = [...prevCarrinho, { produto, quantidade: novaQuantidade }];
+          setValoresInput(prev => ({
+            ...prev,
+            [produtoId]: novaQuantidade.toString()
+          }));
+        } else {
+          novoCarrinho = prevCarrinho.map((item) => {
+            if (item.produto.id === produtoId) {
+              if (produto && novaQuantidade > produto.quantidade) {
+                Swal.fire({
+                  icon: "warning",
+                  title: t("avisoEstoque"),
+                  text: t("quantidadeMaiorQueEstoque"),
+                  background: modoDark ? temaAtual.card : "#FFFFFF",
+                  color: modoDark ? temaAtual.texto : temaAtual.texto,
+                });
+                return { ...item, quantidade: produto.quantidade };
+              }
+              return { ...item, quantidade: novaQuantidade };
+            }
+            return item;
+          });
+          setValoresInput(prev => ({
+            ...prev,
+            [produtoId]: novaQuantidade.toString()
+          }));
+        }
+      }
+
+      return novoCarrinho || prevCarrinho;
     });
   };
 
   const removerDoCarrinho = (produtoId: string) => {
     setCarrinho(carrinho.filter((item) => item.produto.id !== produtoId));
+    setValoresInput(prev => {
+      const novosValores = { ...prev };
+      delete novosValores[produtoId];
+      return novosValores;
+    });
+  };
+
+  const handleMouseEnterFinalizar = () => {
+    if (totalCarrinho === 0) {
+      tooltipTimerRef.current = setTimeout(() => {
+        setShowTooltipFinalizar(true);
+      }, 300);
+    }
+  };
+
+  const handleMouseLeaveFinalizar = () => {
+    if (tooltipTimerRef.current) {
+      clearTimeout(tooltipTimerRef.current);
+      tooltipTimerRef.current = null;
+    }
+    setShowTooltipFinalizar(false);
   };
 
   const finalizarVenda = async () => {
     const usuarioSalvo = localStorage.getItem("client_key");
     if (!usuarioSalvo) return;
+
+    const produtosComZero = carrinho.filter((item) => item.quantidade === 0);
+    
+    if (produtosComZero.length > 0) {
+      Swal.fire({
+        icon: "warning",
+        title: t("quantidadeInvalida") || "Quantidade inválida",
+        text: t("quantidadeMinimaErro") || "Para finalizar a venda, todos os produtos devem ter quantidade maior que 0. Os produtos com quantidade 0 foram ajustados para 1.",
+        confirmButtonColor: "#3085d6",
+        background: modoDark ? temaAtual.card : "#FFFFFF",
+        color: modoDark ? temaAtual.texto : temaAtual.texto,
+      });
+      
+      setCarrinho((prevCarrinho) => {
+        const carrinhoCorrigido = prevCarrinho.map((item) => {
+          if (item.quantidade === 0) {
+            return { ...item, quantidade: 1 };
+          }
+          return item;
+        });
+        
+        const novosValores: Record<string, string> = {};
+        carrinhoCorrigido.forEach(item => {
+          novosValores[item.produto.id] = item.quantidade.toString();
+        });
+        setValoresInput(novosValores);
+        
+        return carrinhoCorrigido;
+      });
+      
+      return;
+    }
 
     const hasValidItems = carrinho.some((item) => item.quantidade > 0);
 
@@ -629,42 +838,55 @@ export default function Vendas() {
           color: modoDark ? temaAtual.texto : temaAtual.texto,
         });
 
+        // LIMPAR CARRINHO
         setCarrinho([]);
         setClienteSelecionado(null);
         localStorage.removeItem("carrinhoVendas");
+        setValoresInput({});
+        setInputEmFoco(null);
 
-        await Promise.all([
-          fetch(`${process.env.NEXT_PUBLIC_URL_API}/produtos`, {
+        // CARREGAR PRODUTOS ATUALIZADOS - APENAS APTOS PARA VENDA
+        if (empresaId) {
+          const produtosAtualizados = await carregarProdutosAptosParaVenda(empresaId);
+          setProdutos(produtosAtualizados);
+        }
+
+        // CARREGAR VENDAS ATUALIZADAS
+        if (empresaId) {
+          const responseVendas = await fetch(`${process.env.NEXT_PUBLIC_URL_API}/venda/${empresaId}`, {
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${Cookies.get("token")}`,
             },
-          }).then((res) => res.json()),
-          fetch(`${process.env.NEXT_PUBLIC_URL_API}/venda/${empresaId}`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${Cookies.get("token")}`,
-            },
-          }).then((res) => res.json()),
-        ]).then(([produtosData, vendasData]) => {
-          const produtosDaEmpresa = produtosData.filter((p: ProdutoI) => p.empresaId === empresaId);
-          setProdutos(produtosDaEmpresa);
-
-          const vendasOrdenadas = (vendasData.vendas || []).sort((a: VendaI, b: VendaI) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
-          setVendas(vendasOrdenadas);
-
-          const produtosVendidos = vendasOrdenadas.reduce((total: number, venda: VendaI) => total + (venda.quantidade || 0), 0);
-          const clientesUnicos = new Set(vendasOrdenadas.map((venda: VendaI) => venda.clienteId).filter(Boolean)).size;
-          const totalVendasAtual = vendasOrdenadas.reduce((total: number, venda: VendaI) => total + (venda.valorVenda || 0), 0);
-          const ticketMedio = vendasOrdenadas.length > 0 ? totalVendasAtual / vendasOrdenadas.length : 0;
-
-          setStats({
-            totalVendas: totalVendasAtual,
-            produtosVendidos,
-            clientesAtendidos: clientesUnicos,
-            ticketMedio,
           });
-        });
+          
+          if (responseVendas.ok) {
+            const vendasData = await responseVendas.json();
+            const vendasDaEmpresa = vendasData.vendas || [];
+            const vendasOrdenadas = vendasDaEmpresa.sort((a: VendaI, b: VendaI) => 
+              new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+            );
+            setVendas(vendasOrdenadas);
+
+            // ATUALIZAR ESTATÍSTICAS
+            const produtosVendidos = vendasDaEmpresa.reduce((total: number, venda: VendaI) => 
+              total + (venda.quantidade || 0), 0
+            );
+            const clientesUnicos = new Set(vendasDaEmpresa.map((venda: VendaI) => venda.clienteId).filter(Boolean)).size;
+            const totalVendasAtual = vendasDaEmpresa.reduce((total: number, venda: VendaI) => 
+              total + (venda.valorVenda || 0), 0
+            );
+            const ticketMedio = vendasDaEmpresa.length > 0 ? totalVendasAtual / vendasDaEmpresa.length : 0;
+
+            setStats({
+              totalVendas: totalVendasAtual,
+              produtosVendidos,
+              clientesAtendidos: clientesUnicos,
+              ticketMedio,
+            });
+          }
+        }
+
       } catch (err) {
         console.error("Erro ao finalizar venda:", err);
         await Swal.fire({
@@ -680,7 +902,9 @@ export default function Vendas() {
     });
   };
 
-  const produtosFiltrados = produtos.filter((produto) => produto.nome.toLowerCase().includes(busca.toLowerCase()));
+  const produtosFiltrados = produtos.filter((produto) => 
+    produto.nome.toLowerCase().includes(busca.toLowerCase())
+  );
 
   const indexUltimoProduto = paginaAtual * produtosPorPagina;
   const indexPrimeiroProduto = indexUltimoProduto - produtosPorPagina;
@@ -740,6 +964,7 @@ export default function Vendas() {
                 <p className={`text-lg ${textSecondary} max-w-2xl mx-auto`}>{t("subtitulo")}</p>
               </div>
             </section>
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               {[
                 {
@@ -825,17 +1050,39 @@ export default function Vendas() {
 
                   <div className="flex items-center gap-3">
                     <div className={`flex items-center gap-1 ${bgCard} border ${borderColor} rounded-xl p-1`}>
-                      <button onClick={() => alterarVisualizacao("cards")} className={`p-2 rounded-lg transition-all duration-300 ${tipoVisualizacao === "cards" ? "bg-blue-500 text-white" : `${bgHover} ${textPrimary}`}`} title="Visualização em Cards">
+                      <button 
+                        onClick={() => alterarVisualizacao("cards")} 
+                        className={`p-2 rounded-lg transition-all duration-300 ${
+                          tipoVisualizacao === "cards" 
+                            ? "bg-blue-500 text-white" 
+                            : `${bgHover} ${textPrimary}`
+                        }`}
+                      >
                         <FaTh className="text-sm" />
                       </button>
-                      <button onClick={() => alterarVisualizacao("lista")} className={`p-2 rounded-lg transition-all duration-300 ${tipoVisualizacao === "lista" ? "bg-blue-500 text-white" : `${bgHover} ${textPrimary}`}`} title="Visualização em Lista">
+                      <button 
+                        onClick={() => alterarVisualizacao("lista")} 
+                        className={`p-2 rounded-lg transition-all duration-300 ${
+                          tipoVisualizacao === "lista" 
+                            ? "bg-blue-500 text-white" 
+                            : `${bgHover} ${textPrimary}`
+                        }`}
+                      >
                         <FaList className="text-sm" />
                       </button>
                     </div>
 
                     {totalPaginas > 1 && (
                       <div className={`flex items-center gap-1 ${bgCard} border ${borderColor} rounded-xl px-3 py-2`}>
-                        <button onClick={() => mudarPagina(paginaAtual - 1)} disabled={paginaAtual === 1} className={`p-1 rounded-lg transition-all duration-300 ${paginaAtual === 1 ? `${textMuted} cursor-not-allowed` : `${textPrimary} ${bgHover} hover:scale-105`}`}>
+                        <button 
+                          onClick={() => mudarPagina(paginaAtual - 1)} 
+                          disabled={paginaAtual === 1} 
+                          className={`p-1 rounded-lg transition-all duration-300 ${
+                            paginaAtual === 1 
+                              ? `${textMuted} cursor-not-allowed` 
+                              : `${textPrimary} ${bgHover} hover:scale-105`
+                          }`}
+                        >
                           <FaAngleLeft className="text-sm" />
                         </button>
 
@@ -843,7 +1090,15 @@ export default function Vendas() {
                           {paginaAtual}/{totalPaginas}
                         </span>
 
-                        <button onClick={() => mudarPagina(paginaAtual + 1)} disabled={paginaAtual === totalPaginas} className={`p-1 rounded-lg transition-all duration-300 ${paginaAtual === totalPaginas ? `${textMuted} cursor-not-allowed` : `${textPrimary} ${bgHover} hover:scale-105`}`}>
+                        <button 
+                          onClick={() => mudarPagina(paginaAtual + 1)} 
+                          disabled={paginaAtual === totalPaginas} 
+                          className={`p-1 rounded-lg transition-all duration-300 ${
+                            paginaAtual === totalPaginas 
+                              ? `${textMuted} cursor-not-allowed` 
+                              : `${textPrimary} ${bgHover} hover:scale-105`
+                          }`}
+                        >
                           <FaAngleRight className="text-sm" />
                         </button>
                       </div>
@@ -875,7 +1130,15 @@ export default function Vendas() {
                     {produtosAtuais.map((produto, index) => (
                       <div
                         key={produto.id}
-                        className={`group ${modoDark ? "bg-gradient-to-br from-blue-500/5 to-cyan-500/5" : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"} rounded-xl border ${modoDark ? "border-blue-500/20 hover:border-blue-500/40" : "border-blue-200 hover:border-blue-300"} p-3 transition-all duration-500 card-hover backdrop-blur-sm`}
+                        className={`group ${
+                          modoDark 
+                            ? "bg-gradient-to-br from-blue-500/5 to-cyan-500/5" 
+                            : "bg-gradient-to-br from-blue-100/30 to-cyan-100/30"
+                        } rounded-xl border ${
+                          modoDark 
+                            ? "border-blue-500/20 hover:border-blue-500/40" 
+                            : "border-blue-200 hover:border-blue-300"
+                        } p-3 transition-all duration-500 card-hover backdrop-blur-sm`}
                         style={{
                           animationDelay: `${index * 100}ms`,
                         }}
@@ -892,14 +1155,32 @@ export default function Vendas() {
                             }}
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                          <div className={`absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm ${produto.quantidade <= 0 ? "bg-red-500/90 text-white" : produto.quantidade <= 5 ? "bg-yellow-500/90 text-white" : "bg-green-500/90 text-white"}`}>{produto.quantidade}</div>
+                          <div className={`absolute top-1 right-1 px-1.5 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm ${
+                            produto.quantidade <= 0 
+                              ? "bg-red-500/90 text-white" 
+                              : produto.quantidade <= 5 
+                                ? "bg-yellow-500/90 text-white" 
+                                : "bg-green-500/90 text-white"
+                          }`}>
+                            {produto.quantidade}
+                          </div>
                         </div>
 
-                        <h3 className={`font-bold ${textPrimary} mb-1 line-clamp-2 group-hover:text-blue-500 transition-colors text-xs leading-tight`}>{produto.nome}</h3>
+                        <h3 className={`font-bold ${textPrimary} mb-1 line-clamp-2 group-hover:text-blue-500 transition-colors text-xs leading-tight`}>
+                          {produto.nome}
+                        </h3>
 
                         <div className="flex justify-between items-center mb-2">
-                          <span className="text-sm font-bold text-cyan-500">{mostrarPreco(produto.preco)}</span>
-                          <span className={`text-xs ${produto.quantidade <= 0 ? "text-red-500" : produto.quantidade <= 5 ? "text-yellow-500" : "text-green-500"}`}>
+                          <span className="text-sm font-bold text-cyan-500">
+                            {mostrarPreco(produto.preco)}
+                          </span>
+                          <span className={`text-xs ${
+                            produto.quantidade <= 0 
+                              ? "text-red-500" 
+                              : produto.quantidade <= 5 
+                                ? "text-yellow-500" 
+                                : "text-green-500"
+                          }`}>
                             {produto.quantidade} {t("unidades")}
                           </span>
                         </div>
@@ -926,7 +1207,11 @@ export default function Vendas() {
                     {produtosAtuais.map((produto, index) => (
                       <div
                         key={produto.id}
-                        className={`group flex items-center gap-3 p-3 rounded-xl border ${modoDark ? "bg-slate-800/50 border-blue-500/20 hover:border-blue-500/40" : "bg-white/80 border-blue-200 hover:border-blue-300"} transition-all duration-300 backdrop-blur-sm`}
+                        className={`group flex items-center gap-3 p-3 rounded-xl border ${
+                          modoDark 
+                            ? "bg-slate-800/50 border-blue-500/20 hover:border-blue-500/40" 
+                            : "bg-white/80 border-blue-200 hover:border-blue-300"
+                        } transition-all duration-300 backdrop-blur-sm`}
                         style={{
                           animationDelay: `${index * 100}ms`,
                         }}
@@ -942,14 +1227,32 @@ export default function Vendas() {
                               (e.target as HTMLImageElement).src = "/out.jpg";
                             }}
                           />
-                          <div className={`absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm ${produto.quantidade <= 0 ? "bg-red-500/90 text-white" : produto.quantidade <= 5 ? "bg-yellow-500/90 text-white" : "bg-green-500/90 text-white"}`}>{produto.quantidade}</div>
+                          <div className={`absolute -top-1 -right-1 px-1.5 py-0.5 rounded-full text-xs font-bold backdrop-blur-sm ${
+                            produto.quantidade <= 0 
+                              ? "bg-red-500/90 text-white" 
+                              : produto.quantidade <= 5 
+                                ? "bg-yellow-500/90 text-white" 
+                                : "bg-green-500/90 text-white"
+                          }`}>
+                            {produto.quantidade}
+                          </div>
                         </div>
 
                         <div className="flex-1 min-w-0">
-                          <h3 className={`font-bold ${textPrimary} line-clamp-1 group-hover:text-blue-500 transition-colors text-sm`}>{produto.nome}</h3>
+                          <h3 className={`font-bold ${textPrimary} line-clamp-1 group-hover:text-blue-500 transition-colors text-sm`}>
+                            {produto.nome}
+                          </h3>
                           <div className="flex items-center gap-2 mt-1">
-                            <span className="text-sm font-bold text-cyan-500">{mostrarPreco(produto.preco)}</span>
-                            <span className={`text-xs ${produto.quantidade <= 0 ? "text-red-500" : produto.quantidade <= 5 ? "text-yellow-500" : "text-green-500"}`}>
+                            <span className="text-sm font-bold text-cyan-500">
+                              {mostrarPreco(produto.preco)}
+                            </span>
+                            <span className={`text-xs ${
+                              produto.quantidade <= 0 
+                                ? "text-red-500" 
+                                : produto.quantidade <= 5 
+                                  ? "text-yellow-500" 
+                                  : "text-green-500"
+                            }`}>
                               {produto.quantidade} {t("unidades")}
                             </span>
                           </div>
@@ -974,19 +1277,28 @@ export default function Vendas() {
                   </div>
                 )}
               </div>
+
               <div className="space-y-6">
                 <div className={`rounded-2xl border ${borderColor} ${bgCard} backdrop-blur-sm overflow-hidden`}>
                   <div className="p-4 border-b" style={{ borderColor: temaAtual.borda }}>
                     <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: temaAtual.texto }}>
                       <FaShoppingCart className={modoDark ? "text-blue-400" : "text-blue-500"} />
                       {t("carrinho")}
-                      {carrinho.length > 0 && <span className={`px-2 py-1 rounded-full text-xs ${modoDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600"}`}>{carrinho.length}</span>}
+                      {carrinho.length > 0 && (
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          modoDark ? "bg-blue-500/20 text-blue-400" : "bg-blue-100 text-blue-600"
+                        }`}>
+                          {carrinho.length}
+                        </span>
+                      )}
                     </h2>
                   </div>
 
                   {carrinho.length === 0 ? (
                     <div className="p-8 text-center">
-                      <div className={`w-16 h-16 mx-auto mb-4 ${modoDark ? "bg-slate-700/50" : "bg-slate-100"} rounded-full flex items-center justify-center`}>
+                      <div className={`w-16 h-16 mx-auto mb-4 ${
+                        modoDark ? "bg-slate-700/50" : "bg-slate-100"
+                      } rounded-full flex items-center justify-center`}>
                         <FaShoppingCart className={`text-2xl ${textMuted}`} />
                       </div>
                       <p className={textMuted}>{t("carrinhoVazio")}</p>
@@ -1008,7 +1320,9 @@ export default function Vendas() {
                                 }}
                               />
                               <div className="flex-1 min-w-0">
-                                <p className={`font-medium text-sm ${textPrimary} truncate`}>{item.produto.nome}</p>
+                                <p className={`font-medium text-sm ${textPrimary} truncate`}>
+                                  {item.produto.nome}
+                                </p>
                                 <p className={`text-xs ${textMuted}`}>
                                   {mostrarPreco(item.produto.preco)} × {item.quantidade}
                                 </p>
@@ -1017,20 +1331,61 @@ export default function Vendas() {
 
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <button onClick={() => atualizarQuantidade(item.produto.id, item.quantidade - 1)} className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 ${modoDark ? "hover:bg-slate-700" : "hover:bg-slate-200"}`}>
+                                <button 
+                                  onClick={() => atualizarQuantidade(item.produto.id, item.quantidade - 1)} 
+                                  className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 ${
+                                    modoDark ? "hover:bg-slate-700" : "hover:bg-slate-200"
+                                  }`}
+                                >
                                   <FaMinus className={`text-xs ${textMuted}`} />
                                 </button>
 
-                                <span className={`px-3 py-1 rounded-lg ${bgInput} ${textPrimary} text-sm font-medium min-w-[40px] text-center`}>{item.quantidade}</span>
+                                <input
+                                  type="text"
+                                  value={
+                                    inputEmFoco === item.produto.id 
+                                      ? valoresInput[item.produto.id] 
+                                      : valoresInput[item.produto.id] || item.quantidade.toString()
+                                  }
+                                  onChange={(e) => handleInputChange(item.produto.id, e.target.value)}
+                                  onFocus={() => handleInputFocus(item.produto.id, item.quantidade)}
+                                  onBlur={() => aplicarQuantidadeInput(item.produto.id)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      aplicarQuantidadeInput(item.produto.id);
+                                      (e.target as HTMLInputElement).blur();
+                                    }
+                                  }}
+                                  className={`w-14 px-2 py-1 rounded-lg text-center ${bgInput} ${
+                                    item.quantidade === 0 ? "text-red-500 font-bold" : textPrimary
+                                  } text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500`}
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                />
 
-                                <button onClick={() => atualizarQuantidade(item.produto.id, item.quantidade + 1)} disabled={item.quantidade >= item.produto.quantidade} className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${modoDark ? "hover:bg-slate-700" : "hover:bg-slate-200"}`}>
+                                <button 
+                                  onClick={() => atualizarQuantidade(item.produto.id, item.quantidade + 1)} 
+                                  disabled={item.quantidade >= item.produto.quantidade} 
+                                  className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 disabled:opacity-50 disabled:cursor-not-allowed ${
+                                    modoDark ? "hover:bg-slate-700" : "hover:bg-slate-200"
+                                  }`}
+                                >
                                   <FaPlus className={`text-xs ${textMuted}`} />
                                 </button>
                               </div>
 
                               <div className="flex items-center gap-2">
-                                <span className={`font-bold text-sm ${textPrimary}`}>{formatarMoeda(converterPrecoParaReal(item.produto.preco) * item.quantidade)}</span>
-                                <button onClick={() => removerDoCarrinho(item.produto.id)} className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 ${modoDark ? "hover:bg-red-500/20 text-red-400" : "hover:bg-red-100 text-red-500"}`}>
+                                <span className={`font-bold text-sm ${
+                                  item.quantidade === 0 ? "text-red-500" : textPrimary
+                                }`}>
+                                  {formatarMoeda(converterPrecoParaReal(item.produto.preco) * item.quantidade)}
+                                </span>
+                                <button 
+                                  onClick={() => removerDoCarrinho(item.produto.id)} 
+                                  className={`p-1 rounded-lg cursor-pointer transition-all duration-200 hover:scale-110 ${
+                                    modoDark ? "hover:bg-red-500/20 text-red-400" : "hover:bg-red-100 text-red-500"
+                                  }`}
+                                >
                                   <FaRegTrashAlt size={12} />
                                 </button>
                               </div>
@@ -1041,15 +1396,29 @@ export default function Vendas() {
 
                       <div className="mt-4 pt-4 border-t" style={{ borderColor: temaAtual.borda }}>
                         <div className="mb-4">
-                          <label className={`block mb-2 text-sm font-medium ${textPrimary}`}>{t("cliente")}</label>
+                          <label className={`block mb-2 text-sm font-medium ${textPrimary}`}>
+                            {t("cliente")}
+                          </label>
                           <div className="relative" ref={menuClientesRef}>
-                            <button onClick={() => setMenuClientesAberto(!menuClientesAberto)} className={`w-full flex items-center justify-between ${bgInput} border ${borderColor} rounded-xl px-3 py-2 ${textPrimary} transition-all duration-300 cursor-pointer`}>
-                              <span className="text-sm">{clienteSelecionado ? clientes.find((c) => c.id === clienteSelecionado)?.nome : t("naoInformarCliente")}</span>
-                              <FaChevronDown className={`text-xs transition-transform duration-300 ${menuClientesAberto ? "rotate-180" : ""}`} />
+                            <button 
+                              onClick={() => setMenuClientesAberto(!menuClientesAberto)} 
+                              className={`w-full flex items-center justify-between ${bgInput} border ${borderColor} rounded-xl px-3 py-2 ${textPrimary} transition-all duration-300 cursor-pointer`}
+                            >
+                              <span className="text-sm">
+                                {clienteSelecionado 
+                                  ? clientes.find((c) => c.id === clienteSelecionado)?.nome 
+                                  : t("naoInformarCliente")
+                                }
+                              </span>
+                              <FaChevronDown className={`text-xs transition-transform duration-300 ${
+                                menuClientesAberto ? "rotate-180" : ""
+                              }`} />
                             </button>
 
                             {menuClientesAberto && (
-                              <div className={`absolute top-full left-0 mt-2 w-full ${modoDark ? "bg-slate-800/95" : "bg-white/95"} border ${borderColor} rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-sm max-h-48 overflow-y-auto`}>
+                              <div className={`absolute top-full left-0 mt-2 w-full ${
+                                modoDark ? "bg-slate-800/95" : "bg-white/95"
+                              } border ${borderColor} rounded-xl shadow-2xl z-50 overflow-hidden backdrop-blur-sm max-h-48 overflow-y-auto`}>
                                 <div
                                   className={`p-2 text-sm cursor-pointer transition-all duration-200 ${bgHover} ${textPrimary}`}
                                   onClick={() => {
@@ -1062,7 +1431,11 @@ export default function Vendas() {
                                 {clientes.map((cliente) => (
                                   <div
                                     key={cliente.id}
-                                    className={`p-2 text-sm cursor-pointer transition-all duration-200 ${bgHover} ${textPrimary} ${clienteSelecionado === cliente.id ? (modoDark ? "bg-blue-500/20" : "bg-blue-100") : ""}`}
+                                    className={`p-2 text-sm cursor-pointer transition-all duration-200 ${bgHover} ${textPrimary} ${
+                                      clienteSelecionado === cliente.id 
+                                        ? (modoDark ? "bg-blue-500/20" : "bg-blue-100") 
+                                        : ""
+                                    }`}
                                     onClick={() => {
                                       setClienteSelecionado(cliente.id);
                                       setMenuClientesAberto(false);
@@ -1078,34 +1451,68 @@ export default function Vendas() {
 
                         <div className="flex justify-between items-center mb-4">
                           <span className={textPrimary}>{t("subtotal")}:</span>
-                          <span className={`text-lg font-bold ${textPrimary}`}>{formatarMoeda(totalCarrinho)}</span>
+                          <span className={`text-lg font-bold ${
+                            totalCarrinho === 0 ? "text-red-500" : textPrimary
+                          }`}>
+                            {formatarMoeda(totalCarrinho)}
+                          </span>
                         </div>
 
-                        <button
-                          onClick={finalizarVenda}
-                          disabled={carregando || totalCarrinho === 0}
-                          className="w-full py-3 rounded-xl font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                          style={{
-                            background: modoDark ? "linear-gradient(135deg, #10B981, #059669)" : "linear-gradient(135deg, #10B981, #059669)",
-                            color: "#FFFFFF",
-                          }}
-                        >
-                          {carregando ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              {t("processando")}
-                            </>
-                          ) : (
-                            <>
-                              <FaCheck size={14} />
-                              {t("finalizarVenda")}
-                            </>
+                        <div className="relative">
+                          <button
+                            onClick={finalizarVenda}
+                            disabled={carregando || totalCarrinho === 0}
+                            onMouseEnter={handleMouseEnterFinalizar}
+                            onMouseLeave={handleMouseLeaveFinalizar}
+                            className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 cursor-pointer flex items-center justify-center gap-2 ${
+                              totalCarrinho === 0 
+                                ? "opacity-70 cursor-not-allowed hover:scale-100" 
+                                : "hover:scale-105"
+                            } ${
+                              modoDark 
+                                ? "bg-gradient-to-r from-gray-600 to-gray-700" 
+                                : "bg-gradient-to-r from-gray-400 to-gray-500"
+                            }`}
+                            style={{
+                              ...(totalCarrinho > 0 && {
+                                background: modoDark 
+                                  ? "linear-gradient(135deg, #10B981, #059669)" 
+                                  : "linear-gradient(135deg, #10B981, #059669)"
+                              }),
+                              color: "#FFFFFF",
+                            }}
+                          >
+                            {carregando ? (
+                              <>
+                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                {t("processando")}
+                              </>
+                            ) : (
+                              <>
+                                <FaCheck size={14} />
+                                {t("finalizarVenda")}
+                              </>
+                            )}
+                          </button>
+                          
+                          {showTooltipFinalizar && totalCarrinho === 0 && (
+                            <div className={`absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap ${
+                              modoDark 
+                                ? "bg-slate-800 text-white border border-slate-700" 
+                                : "bg-gray-900 text-white"
+                            } shadow-lg z-50`}>
+                              {t("tooltipFinalizarVenda") || "Para finalizar a venda, todos os produtos devem ter quantidade maior que 0"}
+                              <div className={`absolute top-full left-1/2 transform -translate-x-1/2 -mt-1 w-2 h-2 rotate-45 ${
+                                modoDark ? "bg-slate-800 border-slate-700" : "bg-gray-900"
+                              }`}></div>
+                            </div>
                           )}
-                        </button>
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
+
                 <div className={`rounded-2xl border ${borderColor} ${bgCard} backdrop-blur-sm overflow-hidden`}>
                   <div className="p-4 border-b" style={{ borderColor: temaAtual.borda }}>
                     <h2 className="text-lg font-bold flex items-center gap-2" style={{ color: temaAtual.texto }}>
@@ -1116,7 +1523,9 @@ export default function Vendas() {
 
                   {vendas.length === 0 ? (
                     <div className="p-8 text-center">
-                      <div className={`w-16 h-16 mx-auto mb-4 ${modoDark ? "bg-slate-700/50" : "bg-slate-100"} rounded-full flex items-center justify-center`}>
+                      <div className={`w-16 h-16 mx-auto mb-4 ${
+                        modoDark ? "bg-slate-700/50" : "bg-slate-100"
+                      } rounded-full flex items-center justify-center`}>
                         <FaHistory className={`text-2xl ${textMuted}`} />
                       </div>
                       <p className={textMuted}>{t("semVendas")}</p>
@@ -1128,14 +1537,26 @@ export default function Vendas() {
                           <div key={venda.id} className={`p-3 rounded-xl border ${borderColor} ${bgHover} transition-all duration-300`}>
                             <div className="flex justify-between items-start mb-2">
                               <div className="flex-1 min-w-0">
-                                <p className={`font-medium text-sm ${textPrimary} truncate`}>{venda.produto?.nome || "Produto desconhecido"}</p>
-                                <p className={`text-xs ${textMuted}`}>{venda.cliente?.nome || t("clienteNaoInformado")}</p>
+                                <p className={`font-medium text-sm ${textPrimary} truncate`}>
+                                  {venda.produto?.nome || "Produto desconhecido"}
+                                </p>
+                                <p className={`text-xs ${textMuted}`}>
+                                  {venda.cliente?.nome || t("clienteNaoInformado")}
+                                </p>
                               </div>
-                              <span className={`text-xs px-2 py-1 rounded-full ${modoDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600"}`}>{venda.quantidade}x</span>
+                              <span className={`text-xs px-2 py-1 rounded-full ${
+                                modoDark ? "bg-green-500/20 text-green-400" : "bg-green-100 text-green-600"
+                              }`}>
+                                {venda.quantidade}x
+                              </span>
                             </div>
                             <div className="flex justify-between items-center">
-                              <span className={`text-xs ${textMuted}`}>{venda.createdAt ? new Date(venda.createdAt).toLocaleDateString() : "Data desconhecida"}</span>
-                              <span className={`font-bold text-sm ${textPrimary}`}>{formatarMoeda(venda.valorVenda || 0)}</span>
+                              <span className={`text-xs ${textMuted}`}>
+                                {venda.createdAt ? new Date(venda.createdAt).toLocaleDateString() : "Data desconhecida"}
+                              </span>
+                              <span className={`font-bold text-sm ${textPrimary}`}>
+                                {formatarMoeda(venda.valorVenda || 0)}
+                              </span>
                             </div>
                           </div>
                         ))}

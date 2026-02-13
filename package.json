@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cleanup:produtos": "tsx scripts/limpeza-produtos-arquivados.ts"
   },
   "dependencies": {
     "fastify-cors": "^6.0.3",

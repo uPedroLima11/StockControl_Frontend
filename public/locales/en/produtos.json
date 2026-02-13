@@ -1,10 +1,104 @@
 {
+  "restaurarSelecionados":"Restore Selected",
   "visualizacao": {
     "titulo": "View",
     "cards": "Cards",
     "lista": "List",
     "tooltipCards": "Grid view with images",
     "tooltipLista": "Compact list view"
+  },
+  "vinculacoes": {
+    "VENDA": "Sales",
+    "MOVIMENTACAO": "Movements",
+    "PEDIDO": "Orders",
+    "INVENTARIO": "Inventories",
+    "NOTIFICACAO": "Notifications",
+    "registros": "records"
+  },
+  "exclusaoImpossivel": {
+    "titulo": "Cannot Delete",
+    "mensagem": "The product \"{produto}\" has active linkages in the system.",
+    "vinculacoes": "Found Linkages",
+    "sugestao": "We recommend archiving the product to keep the complete history.",
+    "arquivar": "Archive Product",
+    "cancelar": "Cancel",
+    "verDetalhes": "View Details"
+  },
+  "detalhesVinculacoes": {
+    "titulo": "Linkage Details",
+    "descricao": "The product \"{produto}\" is linked to the following records:",
+    "entendi": "Understood"
+  },
+  "arquivamento": {
+    "sucesso": {
+      "titulo": "Product Archived",
+      "mensagem": "The product has been successfully archived."
+    },
+    "erro": {
+      "titulo": "Archive Error",
+      "mensagem": "Could not archive the product."
+    },
+    "titulo": "Archive Product",
+    "motivo": "Archive Reason",
+    "motivoPlaceholder": "Ex: Discontinued product, replaced by new model, etc.",
+    "instrucoes": {
+      "titulo": "What happens when archiving:",
+      "removido": "The product will be removed from the main listing",
+      "preservado": "All sales and movements will be preserved",
+      "restauravel": "The product can be restored in the future"
+    },
+    "confirmar": "Confirm Archive",
+    "cancelar": "Cancel"
+  },
+  "restauracao": {
+    "sucesso": {
+      "titulo": "Product Restored",
+      "mensagem": "The product has been successfully restored."
+    },
+    "erro": {
+      "titulo": "Restore Error",
+      "mensagem": "Could not restore the product."
+    },
+    "confirmar": "Restore Product",
+    "cancelar": "Cancel"
+  },
+  "confirmacaoRestauracaoMultipla": {
+    "titulo": "Restore {{count}} product(s)?",
+    "mensagem": "Do you want to restore the selected products? They will return to the main listing.",
+    "botaoConfirmar": "Yes, Restore",
+    "botaoCancelar": "Cancel"
+  },
+  "produtosArquivados": {
+    "titulo": "Archived Products",
+    "subtitulo": "Products that have been archived keeping their history",
+    "nenhum": "No archived products",
+    "verAtivos": "View active products",
+    "restaurar": "Restore",
+    "dataArquivamento": "Archived on",
+    "por": "by",
+    "motivo": "Reason",
+    "selecionar": "Select",
+    "deselecionar": "Deselect",
+    "restaurarSelecionados": "Restore Selected",
+    "limparSelecao": "Clear Selection",
+    "selecionarTodos": "Select All",
+    "deselecionarTodos": "Deselect All",
+    "acaoRestaurar": "Restore from Archive",
+    "descricao": "Products removed from main listing but kept in history",
+    "quantidade": "{{count}} archived product(s)"
+  },
+  "produtosArquivadosSelecionados": {
+    "titulo": "{{count}} archived product(s) selected",
+    "mensagem": "You can restore archived products in bulk."
+  },
+  "estatisticas": {
+    "arquivados": "Archived",
+    "restaurados": "Restored"
+  },
+  "acoes": {
+    "arquivar": "Archive",
+    "restaurar": "Restore",
+    "verVinculacoes": "View linkages"
   },
   "categorias": {
     "Eletronicos": "Electronics",
@@ -19,15 +113,15 @@
     "Higiene": "Hygiene",
     "Beleza": "Beauty",
     "Alimentos": "Food",
-    "Bebidas": "Beverages",
+    "Bebidas": "Drinks",
     "Automotivos": "Automotive",
     "Ferramentas": "Tools",
     "Jardinagem": "Gardening",
-    "Informática": "Computers",
+    "Informática": "IT",
     "Farmácia": "Pharmacy",
     "Limpeza": "Cleaning",
     "Decoração": "Decoration",
-    "Sem Categoria": "Uncategorized"
+    "Sem Categoria": "No Category"
   },
   "produtosSelecionados": {
     "titulo": "{{count}} product(s) selected",
@@ -36,40 +130,39 @@
   "confirmacaoExclusaoMultipla": {
     "titulo": "Delete {{count}} product(s)?",
     "mensagem": "This action cannot be undone. All selected products will be permanently deleted.",
-    "botaoConfirmar": "Yes, delete",
+    "botaoConfirmar": "Yes, Delete",
     "botaoCancelar": "Cancel"
   },
   "produtosExcluidosSucesso": {
     "titulo": "{{count}} product(s) deleted",
-    "mensagem": "Products were successfully deleted."
+    "mensagem": "Products have been successfully deleted."
   },
   "produtosExcluidosParcial": {
-    "titulo": "Partial deletion",
-    "sucessos": "products successfully deleted",
+    "titulo": "Partial Deletion",
+    "sucessos": "products deleted successfully",
     "falhas": "deletion failures"
   },
   "selecionarTodosPagina": "Select all (current page)",
-  "desmarcarTodosPagina": "Unselect all (current page)",
-  "excluirSelecionados": "Delete selected",
-  "limparSelecao": "Clear selection",
-
+  "desmarcarTodosPagina": "Deselect all (current page)",
+  "excluirSelecionados": "Delete Selected",
+  "limparSelecao": "Clear Selection",
   "upload": {
-    "titulo": "Bulk Product Import",
-    "subtitulo": "Upload an Excel or CSV file to register multiple products at once",
+    "titulo": "Bulk Import Products",
+    "subtitulo": "Upload an Excel or CSV spreadsheet to register multiple products at once",
     "arrasteSolte": "Drag and drop your file here",
-    "selecionarArquivo": "Select file",
+    "selecionarArquivo": "Select File",
     "tipoInvalido": "Invalid file type",
     "formatoSuportado": "Supported formats: .xlsx, .xls, .csv (up to 10MB)",
     "tamanhoExcedido": "File too large",
     "tamanhoMaximo": "Maximum size is 10MB",
-    "importante": "Important information",
+    "importante": "Important Information",
     "camposObrigatorios": "Required fields: Name and Description",
-    "descricaoAutomatica": "Empty descriptions will be filled automatically",
+    "descricaoAutomatica": "Empty descriptions will be automatically filled",
     "quantidadeMinimaPadrao": "Default minimum quantity: 10 units",
     "naoTemTemplate": "Don't have a ready spreadsheet?",
     "baixeTemplate": "Download our template with the correct format",
     "baixarTemplate": "Download Template",
-    "trocarArquivo": "Change file",
+    "trocarArquivo": "Change File",
     "preview": "Preview",
     "conteudo": "Content",
     "processando": "Processing...",
@@ -77,28 +170,28 @@
     "sucesso": "Import completed!",
     "resumo": "Import summary:",
     "totalProcessados": "Total processed",
-    "criadosComSucesso": "Successfully created",
+    "criadosComSucesso": "Created successfully",
     "comErros": "With errors",
     "errosEncontrados": "Errors found",
-    "erro": "Import error",
-    "erroConexao": "Connection error",
+    "erro": "Import Error",
+    "erroConexao": "Connection Error",
     "tenteNovamente": "Try again later",
     "concluir": "Finish",
     "produtos": "Import Products",
     "comErrosValidacao": "With validation errors",
     "errosCriacao": "Creation errors",
     "templateBaixado": "Template downloaded",
-    "templateBaixadoMensagem": "Template downloaded successfully! Fill it out and upload.",
+    "templateBaixadoMensagem": "Template downloaded successfully! Fill it in and upload.",
     "erroTemplate": "Error downloading template",
     "dicasRapidas": "Quick Tips",
-    "avisoValidacao": "Validation Pending",
+    "avisoValidacao": "Pending Validation",
     "avisoValidacaoMensagem": "The file will be validated during upload. Errors will be shown before import.",
     "voltarListagem": "Back to list",
     "novaImportacao": "New Import"
   },
   "conversor": {
     "titulo": "Spreadsheet Converter",
-    "subtitulo": "Convert your spreadsheet to the StockControl format",
+    "subtitulo": "Convert your spreadsheet to StockControl format",
     "abrir": "Open Converter",
     "converter": "Convert",
     "sugestaoTitulo": "Found errors?",
@@ -107,15 +200,21 @@
   },
   "titulo": "Your",
   "produtos": "Products",
-  "subtitulo": "Manage your entire inventory in a smart and organized way",
+  "subtitulo": "Manage all your inventory in an intelligent and organized way",
   "stats": {
     "total": "Total",
     "emEstoque": "In Stock",
     "emFalta": "Out of Stock",
-    "noCatalogo": "In Catalog"
+    "noCatalogo": "In Catalog",
+    "arquivados": "Archived"
   },
   "buscarPlaceholder": "Search products...",
   "filtros": {
+    "mostrarArquivados": "Show archived",
+    "mostrarAtivos": "Show active",
+    "todos": "All products",
+    "apenasAtivos": "Active only",
+    "apenasArquivados": "Archived only",
     "filtrar": "Filter",
     "titulo": "Advanced Filters",
     "preco": "Price",
@@ -148,15 +247,15 @@
   "descricao": "Description",
   "descricaoPlaceholder": "Product description",
   "preco": "Price",
-  "visualizacaoLabel": "View",
+  "visualizacaoLabel": "Preview",
   "quantidadeMinima": "Minimum Quantity",
   "quantidadeMinimaPlaceholder": "Minimum quantity",
-  "quantidadeMinimaTooltip": "Minimum stock quantity for restock alerts",
+  "quantidadeMinimaTooltip": "Minimum stock quantity for restocking alerts",
   "foto": "Photo",
   "selecionarImagem": "Select Image",
   "selecionarFornecedor": "Select Supplier",
-  "acessoRestrito": "Restricted Access",
-  "acessoRestritoMensagem": "You do not have permission to view this page.",
+  "acessoRestrito": "Access Restricted",
+  "acessoRestritoMensagem": "You don't have permission to view this page.",
   "selecionarCategoria": "Select Category",
   "incluirNoCatalogo": "Include in catalog",
   "excluir": "Delete",
@@ -189,7 +288,7 @@
   },
   "produtoExcluidoSucesso": {
     "titulo": "Product Deleted!",
-    "mensagem": "Your product was successfully deleted."
+    "mensagem": "Your product has been successfully deleted."
   },
   "produtoAdicionadoCatalogo": {
     "titulo": "Product added to catalog!"
@@ -202,5 +301,7 @@
     "estadoCritico": "Critical",
     "estadoAtencao": "Attention"
   },
-  "emEstoque": "In Stock"
+  "emEstoque": "In Stock",
+  "excluidoPermanente": "Permanently deleted",
+  "arquivadoAuto": "Automatically archived"
 }

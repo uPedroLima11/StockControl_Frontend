@@ -6,6 +6,99 @@
     "tooltipCards": "Visualização em grade com imagens",
     "tooltipLista": "Visualização compacta em lista"
   },
+  "vinculacoes": {
+    "VENDA": "Vendas",
+    "MOVIMENTACAO": "Movimentações",
+    "PEDIDO": "Pedidos",
+    "INVENTARIO": "Inventários",
+    "NOTIFICACAO": "Notificações",
+    "registros": "registros"
+  },
+  "exclusaoImpossivel": {
+    "titulo": "Não é possível excluir",
+    "mensagem": "O produto \"{produto}\" possui vinculações ativas no sistema.",
+    "vinculacoes": "Vinculações encontradas",
+    "sugestao": "Recomendamos arquivar o produto para manter o histórico completo.",
+    "arquivar": "Arquivar Produto",
+    "cancelar": "Cancelar",
+    "verDetalhes": "Ver Detalhes"
+  },
+  "detalhesVinculacoes": {
+    "titulo": "Detalhes das Vinculações",
+    "descricao": "O produto \"{produto}\" está vinculado aos seguintes registros:",
+    "entendi": "Entendi"
+  },
+  "arquivamento": {
+    "sucesso": {
+      "titulo": "Produto arquivado",
+      "mensagem": "O produto foi arquivado com sucesso."
+    },
+    "erro": {
+      "titulo": "Erro ao arquivar",
+      "mensagem": "Não foi possível arquivar o produto."
+    },
+    "titulo": "Arquivar Produto",
+    "motivo": "Motivo do arquivamento",
+    "motivoPlaceholder": "Ex: Produto descontinuado, substituído por novo modelo, etc.",
+    "instrucoes": {
+      "titulo": "O que acontece ao arquivar:",
+      "removido": "O produto será removido da listagem principal",
+      "preservado": "Todas as vendas e movimentações serão preservadas",
+      "restauravel": "O produto poderá ser restaurado futuramente"
+    },
+    "confirmar": "Confirmar Arquivamento",
+    "cancelar": "Cancelar"
+  },
+  "restauracao": {
+    "sucesso": {
+      "titulo": "Produto restaurado",
+      "mensagem": "O produto foi restaurado com sucesso."
+    },
+    "erro": {
+      "titulo": "Erro ao restaurar",
+      "mensagem": "Não foi possível restaurar o produto."
+    },
+    "confirmar": "Restaurar Produto",
+    "cancelar": "Cancelar"
+  },
+  "confirmacaoRestauracaoMultipla": {
+    "titulo": "Restaurar {{count}} produto(s)?",
+    "mensagem": "Deseja restaurar os produtos selecionados? Eles voltarão para a listagem principal.",
+    "botaoConfirmar": "Sim, Restaurar",
+    "botaoCancelar": "Cancelar"
+  },
+  "produtosArquivados": {
+    "titulo": "Produtos Arquivados",
+    "subtitulo": "Produtos que foram arquivados mantendo seu histórico",
+    "nenhum": "Nenhum produto arquivado",
+    "verAtivos": "Ver produtos ativos",
+    "restaurar": "Restaurar",
+    "dataArquivamento": "Arquivado em",
+    "por": "por",
+    "motivo": "Motivo",
+    "selecionar": "Selecionar",
+    "deselecionar": "Deselecionar",
+    "restaurarSelecionados": "Restaurar Selecionados",
+    "limparSelecao": "Limpar Seleção",
+    "selecionarTodos": "Selecionar Todos",
+    "deselecionarTodos": "Deselecionar Todos",
+    "acaoRestaurar": "Restaurar do Arquivo",
+    "descricao": "Produtos removidos da listagem principal mas mantidos no histórico",
+    "quantidade": "{{count}} produto(s) arquivado(s)"
+  },
+  "produtosArquivadosSelecionados": {
+    "titulo": "{{count}} produto(s) arquivado(s) selecionado(s)",
+    "mensagem": "Você pode restaurar produtos arquivados em massa."
+  },
+  "estatisticas": {
+    "arquivados": "Arquivados",
+    "restaurados": "Restaurados"
+  },
+  "acoes": {
+    "arquivar": "Arquivar",
+    "restaurar": "Restaurar",
+    "verVinculacoes": "Ver vinculações"
+  },
   "categorias": {
     "Eletronicos": "Eletrônicos",
     "Roupas": "Roupas",
@@ -52,7 +145,6 @@
   "desmarcarTodosPagina": "Desmarcar todos (página atual)",
   "excluirSelecionados": "Excluir selecionados",
   "limparSelecao": "Limpar seleção",
-  
   "upload": {
     "titulo": "Importar Produtos em Massa",
     "subtitulo": "Envie uma planilha Excel ou CSV para cadastrar múltiplos produtos de uma vez",
@@ -112,10 +204,16 @@
     "total": "Total",
     "emEstoque": "Em Estoque",
     "emFalta": "Em Falta",
-    "noCatalogo": "No Catálogo"
+    "noCatalogo": "No Catálogo",
+    "arquivados": "Arquivados"
   },
   "buscarPlaceholder": "Buscar produtos...",
   "filtros": {
+    "mostrarArquivados": "Mostrar arquivados",
+    "mostrarAtivos": "Mostrar ativos",
+    "todos": "Todos os produtos",
+    "apenasAtivos": "Apenas ativos",
+    "apenasArquivados": "Apenas arquivados",
     "filtrar": "Filtrar",
     "titulo": "Filtros Avançados",
     "preco": "Preço",
@@ -130,6 +228,7 @@
     "limparTodos": "Limpar Todos os Filtros",
     "todasCategorias": "Todas Categorias"
   },
+  "restaurarSelecionados": "Restaurar Selecionados",
   "categoriasLabel": "Categorias",
   "limpar": "Limpar",
   "novoProduto": "Novo Produto",
@@ -202,5 +301,7 @@
     "estadoCritico": "Crítico",
     "estadoAtencao": "Atenção"
   },
-  "emEstoque": "Em Estoque"
+  "emEstoque": "Em Estoque",
+  "excluidoPermanente": "Excluído permanentemente",
+  "arquivadoAuto": "Arquivado automaticamente"
 }

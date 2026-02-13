@@ -1,8 +1,8 @@
 {
-  "titulo": "Sales System",
-  "vendas": "Sales",
+  "titulo": "Sales",
+  "vendas": "System",
   "subtitulo": "Manage your sales quickly and efficiently",
-  "acessoRestrito": "Access Restricted",
+  "acessoRestrito": "Restricted Access",
   "acessoRestritoMensagem": "You don't have permission to view sales.",
   "semPermissaoVisualizar": "You don't have permission to view this page.",
   "carregando": "Loading...",
@@ -15,62 +15,43 @@
   "acoes": "Actions",
   "adicionar": "Add",
   "carrinho": "Cart",
-  "carrinhoVazio": "Cart is empty",
+  "carrinhoVazio": "Empty cart",
   "cliente": "Customer",
-  "naoInformarCliente": "Don't specify customer",
+  "naoInformarCliente": "Don't inform customer",
   "subtotal": "Subtotal",
-  "finalizarVenda": "Complete sale",
+  "finalizarVenda": "Checkout",
   "processando": "Processing...",
   "vendasRecentes": "Recent sales",
-  "semVendas": "No sales made.",
+  "semVendas": "No sales yet.",
   "erro": "Error",
   "quantidadeZeroErro": "Quantity must be greater than zero.",
   "avisoEstoque": "Stock warning",
-  "quantidadeMaiorQueEstoque": "The requested quantity is greater than available stock.",
+  "quantidadeMaiorQueEstoque": "Requested quantity exceeds available stock.",
   "produtoSemEstoque": "Product out of stock.",
   "estoqueInsuficiente": "Insufficient stock.",
   "saldoDisponivel": "Available balance",
   "erroFinalizarVenda": "Error completing sale.",
   "erroCarregarDados": "Error loading data.",
-  "tenteNovamente": "Try again.",
+  "tenteNovamente": "Please try again.",
   "estoqueDisponivel": "Available stock",
   "semEstoqueAdicional": "No additional stock.",
   "vendaSucesso": "Sale completed successfully!",
   "empresaNaoAtivada": {
     "titulo": "Company not activated",
-    "mensagem": "You need to activate the company to access this function.",
+    "mensagem": "You need to activate the company to access this feature.",
     "botao": "Activate now",
     "alertaTitulo": "Company not activated",
     "alertaMensagem": "Activate the company to make sales."
   },
-  "clienteNaoInformado": "Customer not specified.",
+  "clienteNaoInformado": "Customer not informed.",
   "nenhumProdutoEncontrado": "No products found",
-  "comeceAdicionando": "Start by adding products to your catalog",
+  "comeceAdicionando": "Start adding products to your catalog",
   "unidades": "units",
-  "stats": {
-    "totalVendas": "Total Sales",
-    "produtosVendidos": "Products Sold",
-    "clientesAtendidos": "Customers Served",
-    "ticketMedio": "Average Ticket"
-  },
   "visualizacao": {
-    "tooltipCards": "Card View",
+    "cards": "Cards",
+    "lista": "List",
+    "tooltipCards": "Cards View",
     "tooltipLista": "List View"
-  },
-  "filtros": {
-    "filtrar": "Filter",
-    "titulo": "Advanced Filters",
-    "preco": "Price",
-    "estoque": "Stock",
-    "nome": "Name",
-    "valor": "Value",
-    "quantidade": "Quantity",
-    "maiorQue": "Greater than",
-    "menorQue": "Less than",
-    "aZ": "A-Z",
-    "zA": "Z-A",
-    "todasCategorias": "All categories",
-    "limparTodos": "Clear all filters"
   },
   "categoriasLabel": "Categories",
   "limpar": "Clear",
@@ -88,13 +69,13 @@
   "cancelar": "Cancel",
   "salvar": "Save",
   "atualizar": "Update",
-  "enviando": "Sending...",
+  "enviando": "Uploading...",
   "selecionarImagem": "Select image",
   "visualizacaoLabel": "Preview",
   "nomePlaceholder": "Enter product name",
   "descricaoPlaceholder": "Enter product description",
   "quantidadeMinimaPlaceholder": "Minimum stock quantity",
-  "quantidadeMinimaTooltip": "Minimum quantity required in stock for replenishment alerts",
+  "quantidadeMinimaTooltip": "Minimum quantity needed in stock for replenishment alerts",
   "editarProduto": "Edit Product",
   "novoProduto": "New Product",
   "ver": "View",
@@ -114,7 +95,7 @@
   },
   "produtoExcluidoSucesso": {
     "titulo": "Product deleted!",
-    "mensagem": "The product was deleted successfully."
+    "mensagem": "The product was successfully deleted."
   },
   "erroCamposObrigatorios": {
     "titulo": "Required fields",
@@ -131,5 +112,87 @@
     "estadoCritico": "Critical",
     "estadoAtencao": "Attention"
   },
-  "emEstoque": "In stock"
+  "emEstoque": "In stock",
+  "quantidadeInvalida": "Invalid quantity",
+  "quantidadeMinimaErro": "To complete the sale, all products must have quantity greater than 0. Products with quantity 0 have been adjusted to 1.",
+  "tooltipFinalizarVenda": "To complete the sale, all products must have quantity greater than 0",
+  "produtosSelecionados": {
+    "titulo": "{{count}} product(s) selected",
+    "mensagem": "You can perform actions on multiple products"
+  },
+  "excluirSelecionados": "Delete Selected",
+  "selecionarTodosPagina": "Select all on page",
+  "desmarcarTodosPagina": "Deselect all on page",
+  "limparSelecao": "Clear selection",
+  "produtosArquivados": {
+    "nenhum": "No archived products",
+    "subtitulo": "Archived products will appear here",
+    "verAtivos": "View active products",
+    "restaurar": "Restore",
+    "dataArquivamento": "Archived on",
+    "por": "By"
+  },
+  "produtosArquivadosSelecionados": {
+    "titulo": "{{count}} archived product(s) selected",
+    "mensagem": "You can restore multiple products at once"
+  },
+  "restaurarSelecionados": "Restore Selected",
+  "confirmacaoRestauracaoMultipla": {
+    "titulo": "Restore {{count}} product(s)?",
+    "mensagem": "Selected products will be restored and will become visible in the active products list.",
+    "botaoConfirmar": "Yes, restore",
+    "botaoCancelar": "Cancel"
+  },
+  "restauracao": {
+    "sucesso": {
+      "titulo": "Product(s) restored",
+      "mensagem": "Product(s) have been successfully restored."
+    },
+    "erro": {
+      "titulo": "Restore error",
+      "mensagem": "Unable to restore product(s)."
+    }
+  },
+  "arquivamento": {
+    "sucesso": {
+      "titulo": "Product archived",
+      "mensagem": "The product was successfully archived."
+    },
+    "erro": {
+      "titulo": "Archive error",
+      "mensagem": "Unable to archive the product."
+    }
+  },
+  "filtros": {
+    "apenasAtivos": "Active only",
+    "apenasArquivados": "Archived only",
+    "filtrar": "Filter",
+    "titulo": "Advanced Filters",
+    "preco": "Price",
+    "estoque": "Stock",
+    "nome": "Name",
+    "valor": "Value",
+    "quantidade": "Quantity",
+    "maiorQue": "Greater than",
+    "menorQue": "Less than",
+    "aZ": "A-Z",
+    "zA": "Z-A",
+    "todasCategorias": "All categories",
+    "limparTodos": "Clear all filters"
+  },
+  "upload": {
+    "produtos": "Upload products"
+  },
+  "produtos": "Products",
+  "stats": {
+    "total": "Total",
+    "emEstoque": "In stock",
+    "emFalta": "Out of stock",
+    "noCatalogo": "In catalog",
+    "arquivados": "Archived",
+    "totalVendas": "Total Sales",
+    "produtosVendidos": "Products Sold",
+    "clientesAtendidos": "Customers Served",
+    "ticketMedio": "Average Ticket"
+  }
 }

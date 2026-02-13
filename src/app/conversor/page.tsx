@@ -23,7 +23,6 @@ import {
 import { ConversorPlanilha, COLUNAS_TEMPLATE } from '@/../lib/conversorPlanilha';
 import Swal from 'sweetalert2';
 
-// Definindo tipos para os dados
 interface DadosProduto {
   Nome?: string;
   Descricao?: string;

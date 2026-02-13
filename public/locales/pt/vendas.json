@@ -47,13 +47,9 @@
   "nenhumProdutoEncontrado": "Nenhum produto encontrado",
   "comeceAdicionando": "Comece adicionando produtos ao seu catálogo",
   "unidades": "unidades",
-  "stats": {
-    "totalVendas": "Total de Vendas",
-    "produtosVendidos": "Produtos Vendidos",
-    "clientesAtendidos": "Clientes Atendidos",
-    "ticketMedio": "Ticket Médio"
-  },
   "visualizacao": {
+    "cards": "Cards",
+    "lista": "Lista",
     "tooltipCards": "Visualização em Cards",
     "tooltipLista": "Visualização em Lista"
   },
@@ -70,7 +66,9 @@
     "aZ": "A-Z",
     "zA": "Z-A",
     "todasCategorias": "Todas as categorias",
-    "limparTodos": "Limpar todos os filtros"
+    "limparTodos": "Limpar todos os filtros",
+    "apenasAtivos": "Apenas ativos",
+    "apenasArquivados": "Apenas arquivados"
   },
   "categoriasLabel": "Categorias",
   "limpar": "Limpar",
@@ -131,5 +129,70 @@
     "estadoCritico": "Crítico",
     "estadoAtencao": "Atenção"
   },
-  "emEstoque": "Em estoque"
+  "emEstoque": "Em estoque",
+  "quantidadeInvalida": "Quantidade inválida",
+  "quantidadeMinimaErro": "Para finalizar a venda, todos os produtos devem ter quantidade maior que 0. Os produtos com quantidade 0 foram ajustados para 1.",
+  "tooltipFinalizarVenda": "Para finalizar a venda, todos os produtos devem ter quantidade maior que 0",
+  "produtosSelecionados": {
+    "titulo": "{{count}} produto(s) selecionado(s)",
+    "mensagem": "Você pode executar ações em múltiplos produtos"
+  },
+  "excluirSelecionados": "Excluir Selecionados",
+  "selecionarTodosPagina": "Selecionar todos da página",
+  "desmarcarTodosPagina": "Desmarcar todos da página",
+  "limparSelecao": "Limpar seleção",
+  "produtosArquivados": {
+    "nenhum": "Nenhum produto arquivado",
+    "subtitulo": "Produtos arquivados aparecerão aqui",
+    "verAtivos": "Ver produtos ativos",
+    "restaurar": "Restaurar",
+    "dataArquivamento": "Arquivado em",
+    "por": "Por"
+  },
+  "produtosArquivadosSelecionados": {
+    "titulo": "{{count}} produto(s) arquivado(s) selecionado(s)",
+    "mensagem": "Você pode restaurar múltiplos produtos de uma vez"
+  },
+  "restaurarSelecionados": "Restaurar Selecionados",
+  "confirmacaoRestauracaoMultipla": {
+    "titulo": "Restaurar {{count}} produto(s)?",
+    "mensagem": "Os produtos selecionados serão restaurados e voltarão a estar visíveis na lista de produtos ativos.",
+    "botaoConfirmar": "Sim, restaurar",
+    "botaoCancelar": "Cancelar"
+  },
+  "restauracao": {
+    "sucesso": {
+      "titulo": "Produto(s) restaurado(s)",
+      "mensagem": "O(s) produto(s) foi/foram restaurado(s) com sucesso."
+    },
+    "erro": {
+      "titulo": "Erro ao restaurar",
+      "mensagem": "Não foi possível restaurar o(s) produto(s)."
+    }
+  },
+  "arquivamento": {
+    "sucesso": {
+      "titulo": "Produto arquivado",
+      "mensagem": "O produto foi arquivado com sucesso."
+    },
+    "erro": {
+      "titulo": "Erro ao arquivar",
+      "mensagem": "Não foi possível arquivar o produto."
+    }
+  },
+  "upload": {
+    "produtos": "Upload de produtos"
+  },
+  "produtos": "Produtos",
+  "stats": {
+    "total": "Total",
+    "emEstoque": "Em estoque",
+    "emFalta": "Em falta",
+    "noCatalogo": "No catálogo",
+    "arquivados": "Arquivados",
+    "totalVendas": "Total de Vendas",
+    "produtosVendidos": "Produtos Vendidos",
+    "clientesAtendidos": "Clientes Atendidos",
+    "ticketMedio": "Ticket Médio"
+  }
 }
