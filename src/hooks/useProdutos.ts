@@ -55,7 +55,7 @@ export const useProdutos = () => {
         }
     }, [getHeaders]);
 
-  
+
     const arquivarProduto = useCallback(async (
         produtoId: string,
         motivo?: string
@@ -109,7 +109,7 @@ export const useProdutos = () => {
         }
     }, [getHeaders]);
 
- 
+
     const restaurarProduto = useCallback(async (produtoId: string): Promise<ProdutoI> => {
         try {
             setLoading(true);
@@ -238,7 +238,7 @@ export const useProdutos = () => {
         }
     }, [getHeaders]);
 
-   
+
     const excluirMultiplosProdutos = useCallback(async (
         produtoIds: string[],
         acao: 'excluir' | 'arquivar' = 'arquivar'
