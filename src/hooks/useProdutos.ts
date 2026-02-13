@@ -162,6 +162,7 @@ export const useProdutos = () => {
     }[]> => {
         try {
             setLoading(true);
+            setError(null);
 
             const resultados = [];
 
@@ -186,7 +187,7 @@ export const useProdutos = () => {
                             podeExcluir: false
                         });
                     }
-                } catch (_error: unknown) {
+                } catch {
                     resultados.push({
                         id: produtoId,
                         podeExcluir: false
