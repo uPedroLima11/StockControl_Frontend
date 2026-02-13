@@ -35,7 +35,7 @@ export interface ProdutoI {
 export interface VinculacaoProdutoI {
   tipo: 'VENDA' | 'MOVIMENTACAO' | 'PEDIDO' | 'INVENTARIO' | 'NOTIFICACAO';
   quantidade: number;
-  detalhes?: any;
+  detalhes?: Record<string, string | number | boolean | null>;
 }
 
 export interface VerificacaoVinculacoesI {

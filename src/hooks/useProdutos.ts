@@ -186,7 +186,7 @@ export const useProdutos = () => {
                             podeExcluir: false
                         });
                     }
-                } catch (error) {
+                } catch (_error: unknown) {
                     resultados.push({
                         id: produtoId,
                         podeExcluir: false
@@ -281,7 +281,7 @@ export const useProdutos = () => {
     const mostrarModalExclusaoInteligente = useCallback(async (
         produto: ProdutoI,
         modoDark: boolean,
-        t: (key: string, params?: any) => string,
+        t: (key: string, params?: Record<string, string | number>) => string,
         onConfirm: (acao: 'excluir' | 'arquivar') => Promise<void>
     ) => {
         try {
