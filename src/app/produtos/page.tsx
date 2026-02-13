@@ -187,6 +187,7 @@ export default function Produtos() {
     [adjustTextareaHeight]
   );
 
+
   const atualizarEstatisticas = useCallback(async () => {
     if (!empresaId) return;
 
@@ -232,8 +233,8 @@ export default function Produtos() {
           arquivados: estatisticas.arquivados || 0
         });
       }
-    } catch (error) {
-      console.error("Erro ao atualizar estatísticas:", error);
+    } catch {
+      console.error("Erro ao atualizar estatísticas:");
     }
   }, [empresaId]);
 
@@ -244,7 +245,6 @@ export default function Produtos() {
 
     try {
       const token = Cookies.get("token");
-      const userId = localStorage.getItem("client_key");
 
       if (!token) {
         throw new Error('Token não encontrado');
@@ -274,8 +274,8 @@ export default function Produtos() {
         });
         setPaginaArquivados(pagina);
       }
-    } catch (error) {
-      console.error("Erro ao carregar produtos arquivados:", error);
+    } catch {
+      console.error("Erro ao carregar produtos arquivados:");
       Swal.fire({
         title: "Erro de Autenticação",
         text: "Sua sessão expirou. Faça login novamente.",
@@ -315,10 +315,9 @@ export default function Produtos() {
 
         let novaPagina = paginaArquivados;
 
-        if (produtosArquivadosAtuais.length === 1 && paginaArquivados > 1) {
+        if (produtosArquivados.length === 1 && paginaArquivados > 1) {
           novaPagina = paginaArquivados - 1;
         }
-
 
         const totalPaginasCalculado = Math.ceil(totalArquivados / 12);
         if (novaPagina > totalPaginasCalculado && totalPaginasCalculado > 0) {
@@ -338,7 +337,7 @@ export default function Produtos() {
 
       setModalArquivarAberto(false);
       setProdutoParaArquivar(null);
-    } catch (error) {
+    } catch {
       Swal.fire({
         title: t("arquivamento.erro.titulo"),
         text: t("arquivamento.erro.mensagem"),
@@ -370,10 +369,9 @@ export default function Produtos() {
 
           let novaPagina = paginaArquivados;
 
-          if (produtosArquivadosAtuais.length === 1 && paginaArquivados > 1) {
+          if (produtosArquivados.length === 1 && paginaArquivados > 1) {
             novaPagina = paginaArquivados - 1;
           }
-
 
           const totalPaginasCalculado = Math.ceil(totalArquivados / 12);
           if (novaPagina > totalPaginasCalculado && totalPaginasCalculado > 0) {
@@ -388,7 +386,7 @@ export default function Produtos() {
 
         setProdutosArquivadosSelecionados(new Set());
         localStorage.removeItem('produtos_arquivados_selecionados');
-      } catch (error) {
+      } catch {
         Swal.fire({
           title: t("restauracao.erro.titulo"),
           text: t("restauracao.erro.mensagem"),
@@ -399,7 +397,6 @@ export default function Produtos() {
       }
     });
   };
-
 
   const handleDelete = async (produto: ProdutoI) => {
     handleAcaoProtegida(async () => {
@@ -420,7 +417,7 @@ export default function Produtos() {
               });
               await recarregarListaProdutos();
               await atualizarEstatisticas();
-            } catch (error) {
+            } catch {
               Swal.fire("Erro!", "Não foi possível deletar o produto.", "error");
             }
           } else if (acao === 'arquivar') {
@@ -601,7 +598,7 @@ export default function Produtos() {
             await atualizarEstatisticas();
           }
         }
-      } catch (error) {
+      } catch {
         Swal.fire("Erro!", "Não foi possível processar os produtos.", "error");
       }
     });
@@ -647,7 +644,7 @@ export default function Produtos() {
 
   const selecionarTodosDaPagina = () => {
     if (filtroStatus === 'arquivados') {
-      const idsDaPagina = produtosArquivadosAtuais.map(p => p.id);
+      const idsDaPagina = produtosArquivados.map(p => p.id);
       setProdutosArquivadosSelecionados(prev => {
         const novoSet = new Set(prev);
         idsDaPagina.forEach(id => novoSet.add(id));
@@ -667,7 +664,7 @@ export default function Produtos() {
 
   const desmarcarTodosDaPagina = () => {
     if (filtroStatus === 'arquivados') {
-      const idsDaPagina = produtosArquivadosAtuais.map(p => p.id);
+      const idsDaPagina = produtosArquivados.map(p => p.id);
       setProdutosArquivadosSelecionados(prev => {
         const novoSet = new Set(prev);
         idsDaPagina.forEach(id => novoSet.delete(id));
@@ -722,11 +719,11 @@ export default function Produtos() {
               nome: produtosArquivados.find(p => p.id === produtoId)?.nome || produtoId,
               sucesso: true
             });
-          } catch (error) {
+          } catch {
             erros.push({
               id: produtoId,
               nome: produtosArquivados.find(p => p.id === produtoId)?.nome || produtoId,
-              erro: error instanceof Error ? error.message : 'Erro desconhecido'
+              erro: 'Erro desconhecido'
             });
           }
         }
@@ -763,7 +760,7 @@ export default function Produtos() {
 
         let novaPagina = paginaArquivados;
 
-        if (produtosArquivadosAtuais.length === produtosArquivadosSelecionados.size && paginaArquivados > 1) {
+        if (produtosArquivados.length === produtosArquivadosSelecionados.size && paginaArquivados > 1) {
           novaPagina = paginaArquivados - 1;
         }
 
@@ -802,7 +799,7 @@ export default function Produtos() {
       try {
         const ids = JSON.parse(salvos) as string[];
         setProdutosSelecionados(new Set(ids));
-      } catch (error) {
+      } catch {
         localStorage.removeItem('produtos_selecionados');
       }
     }
@@ -812,7 +809,7 @@ export default function Produtos() {
       try {
         const ids = JSON.parse(salvosArquivados) as string[];
         setProdutosArquivadosSelecionados(new Set(ids));
-      } catch (error) {
+      } catch {
         localStorage.removeItem('produtos_arquivados_selecionados');
       }
     }
@@ -869,8 +866,8 @@ export default function Produtos() {
               }
               setPermissoesUsuario(permissoes);
             }
-          } catch (error) {
-            console.error("Erro ao carregar permissões:", error);
+          } catch {
+            console.error("Erro ao carregar permissões:");
           }
         };
 
@@ -940,8 +937,8 @@ export default function Produtos() {
               const valorDolar = await fetch("https://economia.awesomeapi.com.br/json/last/USD-BRL");
               const cotacaoJson = await valorDolar.json();
               setCotacaoDolar(parseFloat(cotacaoJson.USDBRL.bid));
-            } catch (error) {
-              console.error("Erro ao buscar cotação do dólar:", error);
+            } catch {
+              console.error("Erro ao buscar cotação do dólar:");
             }
           }
         }
@@ -972,8 +969,8 @@ export default function Produtos() {
         }
 
         await carregarPermissoes();
-      } catch (error) {
-        console.error("Erro ao inicializar:", error);
+      } catch {
+        console.error("Erro ao inicializar:");
       } finally {
         setLoading(false);
       }
@@ -1117,22 +1114,15 @@ export default function Produtos() {
       document.removeEventListener("mousedown", handleClickOutside);
       document.head.removeChild(style);
     };
-  }, [modoDark, recarregarProdutos]);
+  }, [modoDark, recarregarProdutos, carregarProdutosArquivados]);
 
-  useEffect(() => {
-    if (filtroStatus === 'arquivados') {
-      carregarProdutosArquivados(1);
-    } else if (filtroStatus === 'ativos') {
-      recarregarListaProdutos();
-      setPaginaAtual(1);
-    }
-  }, [filtroStatus]);
+
 
   useEffect(() => {
     if (filtroStatus === 'arquivados') {
       carregarProdutosArquivados(paginaArquivados);
     }
-  }, [paginaArquivados, filtroStatus]);
+  }, [paginaArquivados, filtroStatus, carregarProdutosArquivados]);
 
   useEffect(() => {
     if (produtosOriginais.length > 0) {
@@ -1261,11 +1251,19 @@ export default function Produtos() {
 
         await atualizarEstatisticas();
       }
-    } catch (error) {
-      console.error("Erro ao recarregar produtos:", error);
+    } catch {
+      console.error("Erro ao recarregar produtos:");
     }
   }, [empresaId, atualizarEstatisticas]);
 
+  useEffect(() => {
+    if (filtroStatus === 'arquivados') {
+      carregarProdutosArquivados(1);
+    } else if (filtroStatus === 'ativos') {
+      recarregarListaProdutos();
+      setPaginaAtual(1);
+    }
+  }, [filtroStatus, carregarProdutosArquivados, recarregarListaProdutos]);
   const ordenarProdutos = (produtos: ProdutoI[], campo: CampoOrdenacao, direcao: DirecaoOrdenacao) => {
     if (campo === "none") return [...produtos];
 
@@ -1347,7 +1345,7 @@ export default function Produtos() {
         return data.temPermissao;
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -1370,7 +1368,7 @@ export default function Produtos() {
 
       setEmpresaAtivada(ativada);
       return ativada;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
@@ -1446,7 +1444,7 @@ export default function Produtos() {
       } else {
         return null;
       }
-    } catch (error) {
+    } catch {
       return null;
     } finally {
       setIsUploading(false);
@@ -1491,7 +1489,7 @@ export default function Produtos() {
         } else {
           Swal.fire("Erro!", "Não foi possível alterar o catálogo", "error");
         }
-      } catch (err) {
+      } catch {
         Swal.fire("Erro!", "Erro de conexão avec le serveur", "error");
       }
     });
@@ -1631,7 +1629,7 @@ export default function Produtos() {
           const errorData = await response.json();
           Swal.fire("Erro!", `Erro ao cadastrar produto: ${errorData.mensagem || "Erro desconhecido"}`, "error");
         }
-      } catch (err) {
+      } catch {
         Swal.fire("Erro!", "Erro de conexão com o servidor", "error");
       }
     });
@@ -1663,7 +1661,7 @@ export default function Produtos() {
       } else {
         return null;
       }
-    } catch (error) {
+    } catch {
       return null;
     } finally {
       setIsUploading(false);
@@ -1787,7 +1785,7 @@ export default function Produtos() {
             color: modoDark ? temaAtual.texto : temaAtual.texto,
           });
         }
-      } catch (err) {
+      } catch {
         Swal.fire({
           icon: "error",
           title: "Erro!",
@@ -1859,7 +1857,7 @@ export default function Produtos() {
         return false;
       }
       return true;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
