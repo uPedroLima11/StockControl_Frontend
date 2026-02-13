@@ -1,6 +1,6 @@
 import { CategoriaI } from "./categoria";
 import { FornecedorI } from "./fornecedor";
-import { UsuarioI } from "./usuario"; 
+import { UsuarioI } from "./usuario";
 
 export interface ProdutoI {
   id: string;
